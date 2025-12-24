@@ -1,13 +1,13 @@
 // API Configuration
 const API_URL = 'https://static-crane-seeutech-17dd4df3.koyeb.app/api/channels';
 const SMARTLINK_URL = 'https://staggermeaningless.com/djr63xfh5?key=0594e81080ace7ae2229d79efcbc8072';
-const AD_FREQUENCY = 5; // Show ad after every 6 channels
+const AD_FREQUENCY = 6; // Show ad after every 6 channels
 
 // Ad Configuration
 const AD_CONFIG = {
     key: 'e370435c2937a2c6a0c3fa900e0430ac',
     format: 'iframe',
-    height: 250,
+    height: 100,
     width: 300,
     scriptUrl: 'https://staggermeaningless.com/e370435c2937a2c6a0c3fa900e0430ac/invoke.js'
 };
