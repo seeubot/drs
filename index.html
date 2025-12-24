@@ -381,29 +381,43 @@
             return adCard;
         }
 
-        function openSmartLink() {
-            if (window.Android && window.Android.showMessage) {
-                // Open in external browser via Android
-                window.open(SMARTLINK_URL, '_blank');
-            } else {
-                // Fallback for web testing
-                window.open(SMARTLINK_URL, '_blank');
-            }
-        }
+        let pendingChannelData = null;
 
         function handleChannelClick(item) {
-            // Open smart link ad first
-            openSmartLink();
+            // Store channel data for later playback
+            pendingChannelData = item;
             
-            // Small delay before playing channel
-            setTimeout(() => {
-                if (window.Android && window.Android.playChannel) {
-                    window.Android.playChannel(JSON.stringify(item));
-                } else {
-                    console.log("Playing:", item.title, item.url);
-                }
-            }, 500);
+            // Open smart link ad in external browser
+            window.open(SMARTLINK_URL, '_blank');
         }
+
+        // When user returns to the app, play the pending channel
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && pendingChannelData) {
+                // User returned to the app, play the channel
+                if (window.Android && window.Android.playChannel) {
+                    window.Android.playChannel(JSON.stringify(pendingChannelData));
+                } else {
+                    console.log("Playing:", pendingChannelData.title, pendingChannelData.url);
+                }
+                // Clear pending data
+                pendingChannelData = null;
+            }
+        });
+
+        // Alternative: use focus event as backup
+        window.addEventListener('focus', function() {
+            if (pendingChannelData) {
+                setTimeout(() => {
+                    if (window.Android && window.Android.playChannel) {
+                        window.Android.playChannel(JSON.stringify(pendingChannelData));
+                    } else {
+                        console.log("Playing:", pendingChannelData.title, pendingChannelData.url);
+                    }
+                    pendingChannelData = null;
+                }, 300);
+            }
+        });
 
         function renderGrid(data) {
             grid.innerHTML = '';
