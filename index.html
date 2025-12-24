@@ -9,6 +9,7 @@
             --bg-color: #0a0a0c;
             --card-bg: #161618;
             --accent: #3b82f6;
+            --telegram: #0088cc;
             --text-main: #ffffff;
             --text-dim: #94a3b8;
             --search-bg: #1e1e22;
@@ -34,7 +35,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(10, 10, 12, 0.8);
+            background: rgba(10, 10, 12, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             padding: 16px;
@@ -87,7 +88,7 @@
         .categories::-webkit-scrollbar { display: none; }
 
         .cat-chip {
-            padding: 8px 16px;
+            padding: 8px 18px;
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 100px;
@@ -135,6 +136,11 @@
             flex-direction: column;
         }
 
+        .channel-card:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            background: #1c1c1f;
+        }
+
         .channel-card:active {
             transform: scale(0.96);
         }
@@ -144,7 +150,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 16px;
+            padding: 20px;
             background: #1c1c1f;
         }
 
@@ -152,7 +158,7 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
         }
 
         .channel-meta {
@@ -176,42 +182,38 @@
             letter-spacing: 0.5px;
         }
 
-        /* Ad Card Styling */
-        .ad-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            aspect-ratio: 1/1.2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 8px;
-        }
-
-        .ad-container {
-            width: 100%;
-            height: 100%;
+        /* Telegram Floating Button */
+        .telegram-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--telegram);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 136, 204, 0.4);
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s;
+            text-decoration: none;
         }
 
-        .ad-label {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.6);
-            color: var(--text-dim);
-            font-size: 9px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            z-index: 10;
+        .telegram-btn:hover {
+            transform: scale(1.1) translateY(-5px);
+            background-color: #0099e5;
+        }
+
+        .telegram-btn:active {
+            transform: scale(0.9);
+        }
+
+        .telegram-btn svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
+            margin-right: 2px; /* Visual centering adjustment for TG icon */
         }
 
         /* Loading & Empty States */
@@ -232,20 +234,17 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-dim);
-        }
-
-        #error-msg {
-            background: rgba(239, 68, 68, 0.1);
-            color: #f87171;
-            padding: 12px;
-            margin: 16px;
-            border-radius: 8px;
-            text-align: center;
-            display: none;
+        @media (max-width: 640px) {
+            .telegram-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 54px;
+                height: 54px;
+            }
+            .telegram-btn svg {
+                width: 28px;
+                height: 28px;
+            }
         }
     </style>
 </head>
@@ -258,17 +257,27 @@
         </div>
         <div class="categories" id="categoriesBox">
             <button class="cat-chip active" data-cat="All">All Channels</button>
+            <button class="cat-chip" data-cat="Sports">Sports</button>
+            <button class="cat-chip" data-cat="News">News</button>
+            <button class="cat-chip" data-cat="Movies">Movies</button>
         </div>
     </div>
 
-    <div id="error-msg"></div>
+    <div id="error-msg" style="background: rgba(239, 68, 68, 0.1); color: #f87171; padding: 12px; margin: 16px; border-radius: 8px; text-align: center; display: none;"></div>
 
     <main class="main-content">
         <div id="loader" class="loader"><div class="spinner"></div></div>
         <div id="grid" class="channels-grid"></div>
     </main>
 
-    <!-- External JavaScript File -->
+    <!-- Telegram Floating Action Button -->
+    <a href="https://t.me/+t9rJ42tcRJI2MDFl" target="_blank" class="telegram-btn" aria-label="Join our Telegram">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.56 8.16l-1.36 5.44c-.17.58-.34.77-.44.78-.22.02-.4-.15-.61-.29-.34-.22-.53-.36-.87-.58-.38-.25-.13-.39.08-.62.06-.06 1.06-.97 1.08-1.05.002-.01-.001-.05-.03-.06-.03-.01-.07-.01-.1 0-.04.01-.7.44-1.97 1.3-.19.13-.35.19-.5.19-.17 0-.49-.09-.72-.17-.29-.09-.52-.14-.5-.3.01-.08.13-.17.35-.26 1.36-.59 2.26-.98 2.72-1.17 1.29-.54 1.56-.63 1.73-.63.04 0 .13.01.18.05.05.04.06.09.07.13.004.04 0 .08-.002.12z"/>
+        </svg>
+    </a>
+
     <script src="app.js"></script>
 </body>
 </html>
+
