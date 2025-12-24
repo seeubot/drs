@@ -15,7 +15,6 @@ const AD_CONFIG = {
 // Global State
 let allChannels = [];
 let filtered = [];
-let currentCat = 'All';
 let pendingChannelData = null;
 let adOpened = false;
 
@@ -23,7 +22,6 @@ let adOpened = false;
 const grid = document.getElementById('grid');
 const loader = document.getElementById('loader');
 const searchInput = document.getElementById('searchInput');
-const categoriesBox = document.getElementById('categoriesBox');
 const errorMsg = document.getElementById('error-msg');
 
 // Initialize App
@@ -34,7 +32,6 @@ async function init() {
         
         if (json.success && Array.isArray(json.data)) {
             allChannels = json.data;
-            renderCategories();
             renderGrid(allChannels);
         } else {
             throw new Error("Invalid data format");
@@ -48,43 +45,13 @@ async function init() {
     }
 }
 
-// Render Categories
-function renderCategories() {
-    const groups = new Set();
-    allChannels.forEach(c => { 
-        if(c.groupTitle) groups.add(c.groupTitle); 
-    });
-    
-    [...groups].sort().forEach(group => {
-        const btn = document.createElement('button');
-        btn.className = 'cat-chip';
-        btn.textContent = group;
-        btn.onclick = () => {
-            document.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentCat = group;
-            applyFilters();
-        };
-        categoriesBox.appendChild(btn);
-    });
-
-    // "All" button logic
-    categoriesBox.querySelector('[data-cat="All"]').onclick = (e) => {
-        document.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        currentCat = 'All';
-        applyFilters();
-    };
-}
-
-// Apply Filters
+// Apply Filters (only search, no category)
 function applyFilters() {
     const query = searchInput.value.toLowerCase().trim();
     
     filtered = allChannels.filter(c => {
-        const matchesCat = currentCat === 'All' || c.groupTitle === currentCat;
         const matchesSearch = !query || c.title.toLowerCase().includes(query);
-        return matchesCat && matchesSearch;
+        return matchesSearch;
     });
 
     renderGrid(filtered);
