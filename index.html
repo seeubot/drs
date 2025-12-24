@@ -205,18 +205,19 @@
 
         .ad-container {
             width: 100%;
-            min-height: 250px;
+            height: 100px;
             background: #0a0a0c;
-            overflow: visible;
-            display: block;
-            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .ad-container iframe,
-        .ad-container ins {
-            display: block !important;
-            margin: 0 auto !important;
+        .ad-container ins,
+        .ad-container > div {
             max-width: 100% !important;
+            max-height: 100px !important;
         }
 
         /* Force ad content to be visible and centered */
