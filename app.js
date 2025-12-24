@@ -90,7 +90,7 @@ function applyFilters() {
     renderGrid(filtered);
 }
 
-// Create Ad Card (Full Width Banner)
+// Create Ad Card (Full Width Banner with exact size)
 function createAdCard() {
     const adCard = document.createElement('div');
     adCard.className = 'ad-card';
@@ -106,9 +106,10 @@ function createAdCard() {
     setTimeout(() => {
         const adContainer = document.getElementById(adId);
         if (adContainer) {
-            const script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.innerHTML = `
+            // Create atOptions configuration
+            const atOptionsScript = document.createElement('script');
+            atOptionsScript.type = 'text/javascript';
+            atOptionsScript.innerHTML = `
                 atOptions = {
                     'key' : '${AD_CONFIG.key}',
                     'format' : '${AD_CONFIG.format}',
@@ -117,14 +118,30 @@ function createAdCard() {
                     'params' : {}
                 };
             `;
-            adContainer.appendChild(script);
+            adContainer.appendChild(atOptionsScript);
             
+            // Load the ad invoke script
             const invokeScript = document.createElement('script');
             invokeScript.type = 'text/javascript';
             invokeScript.src = AD_CONFIG.scriptUrl;
+            invokeScript.async = true;
+            
+            // Ensure ad loads with exact dimensions
+            invokeScript.onload = () => {
+                console.log('Ad script loaded for:', adId);
+                // Force the ad container to maintain size
+                const adElement = adContainer.querySelector('iframe, ins');
+                if (adElement) {
+                    adElement.style.width = AD_CONFIG.width + 'px';
+                    adElement.style.height = AD_CONFIG.height + 'px';
+                    adElement.style.display = 'block';
+                    adElement.style.margin = '0 auto';
+                }
+            };
+            
             adContainer.appendChild(invokeScript);
         }
-    }, 100);
+    }, 150);
     
     return adCard;
 }
@@ -180,6 +197,12 @@ function renderGrid(data) {
             grid.appendChild(adCard);
         }
     });
+    
+    // Add one more ad at the end if there are remaining channels
+    if (data.length > AD_FREQUENCY) {
+        const adCard = createAdCard();
+        grid.appendChild(adCard);
+    }
 }
 
 // When user returns to the app, play the pending channel
