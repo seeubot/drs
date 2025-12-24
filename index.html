@@ -190,6 +190,7 @@
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.05);
             margin: 8px 0;
+            width: 100%;
         }
 
         .ad-label {
@@ -204,17 +205,24 @@
 
         .ad-container {
             width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 250px;
             background: #0a0a0c;
-            overflow: hidden;
+            overflow: visible;
+            display: block;
+            position: relative;
         }
 
-        .ad-container iframe {
-            max-width: 100%;
-            height: auto;
+        .ad-container iframe,
+        .ad-container ins {
+            display: block !important;
+            margin: 0 auto !important;
+            max-width: 100% !important;
+        }
+
+        /* Force ad content to be visible and centered */
+        .ad-container > * {
+            margin: 0 auto;
+            display: block;
         }
 
         /* Telegram Floating Button */
