@@ -102,46 +102,46 @@ function createAdCard() {
         <div class="ad-container" id="${adId}"></div>
     `;
     
-    // Inject ad script after element is added to DOM
-    setTimeout(() => {
+    // Wait for element to be in DOM
+    requestAnimationFrame(() => {
         const adContainer = document.getElementById(adId);
-        if (adContainer) {
-            // Create atOptions configuration
-            const atOptionsScript = document.createElement('script');
-            atOptionsScript.type = 'text/javascript';
-            atOptionsScript.innerHTML = `
-                atOptions = {
-                    'key' : '${AD_CONFIG.key}',
-                    'format' : '${AD_CONFIG.format}',
-                    'height' : ${AD_CONFIG.height},
-                    'width' : ${AD_CONFIG.width},
-                    'params' : {}
-                };
-            `;
-            adContainer.appendChild(atOptionsScript);
-            
-            // Load the ad invoke script
-            const invokeScript = document.createElement('script');
-            invokeScript.type = 'text/javascript';
-            invokeScript.src = AD_CONFIG.scriptUrl;
-            invokeScript.async = true;
-            
-            // Ensure ad loads with exact dimensions
-            invokeScript.onload = () => {
-                console.log('Ad script loaded for:', adId);
-                // Force the ad container to maintain size
-                const adElement = adContainer.querySelector('iframe, ins');
-                if (adElement) {
-                    adElement.style.width = AD_CONFIG.width + 'px';
-                    adElement.style.height = AD_CONFIG.height + 'px';
-                    adElement.style.display = 'block';
-                    adElement.style.margin = '0 auto';
-                }
-            };
-            
-            adContainer.appendChild(invokeScript);
-        }
-    }, 150);
+        if (!adContainer) return;
+        
+        // Method 1: Try direct document.write approach (most compatible)
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:100%;height:270px;border:none;overflow:hidden;';
+        iframe.setAttribute('scrolling', 'no');
+        iframe.setAttribute('frameborder', '0');
+        
+        adContainer.appendChild(iframe);
+        
+        const iframeDoc = iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { margin: 0; padding: 10px; text-align: center; background: #0a0a0c; }
+                    * { box-sizing: border-box; }
+                </style>
+            </head>
+            <body>
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : '${AD_CONFIG.key}',
+                        'format' : '${AD_CONFIG.format}',
+                        'height' : ${AD_CONFIG.height},
+                        'width' : ${AD_CONFIG.width},
+                        'params' : {}
+                    };
+                </script>
+                <script type="text/javascript" src="${AD_CONFIG.scriptUrl}"></script>
+            </body>
+            </html>
+        `);
+        iframeDoc.close();
+    });
     
     return adCard;
 }
