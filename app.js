@@ -17,6 +17,7 @@ let allChannels = [];
 let filtered = [];
 let currentCat = 'All';
 let pendingChannelData = null;
+let adOpened = false;
 
 // DOM Elements
 const grid = document.getElementById('grid');
@@ -35,7 +36,6 @@ async function init() {
             allChannels = json.data;
             renderCategories();
             renderGrid(allChannels);
-            loadBannerAdScript();
         } else {
             throw new Error("Invalid data format");
         }
@@ -46,27 +46,6 @@ async function init() {
     } finally {
         loader.style.display = 'none';
     }
-}
-
-// Load Banner Ad Script
-function loadBannerAdScript() {
-    const atOptionsScript = document.createElement('script');
-    atOptionsScript.type = 'text/javascript';
-    atOptionsScript.innerHTML = `
-        atOptions = {
-            'key' : '${AD_CONFIG.key}',
-            'format' : '${AD_CONFIG.format}',
-            'height' : ${AD_CONFIG.height},
-            'width' : ${AD_CONFIG.width},
-            'params' : {}
-        };
-    `;
-    document.body.appendChild(atOptionsScript);
-    
-    const invokeScript = document.createElement('script');
-    invokeScript.type = 'text/javascript';
-    invokeScript.src = AD_CONFIG.scriptUrl;
-    document.body.appendChild(invokeScript);
 }
 
 // Render Categories
@@ -111,7 +90,7 @@ function applyFilters() {
     renderGrid(filtered);
 }
 
-// Create Ad Card
+// Create Ad Card (Full Width Banner)
 function createAdCard() {
     const adCard = document.createElement('div');
     adCard.className = 'ad-card';
@@ -119,7 +98,7 @@ function createAdCard() {
     const adId = 'ad-' + Math.random().toString(36).substr(2, 9);
     
     adCard.innerHTML = `
-        <span class="ad-label">AD</span>
+        <div class="ad-label">ADVERTISEMENT</div>
         <div class="ad-container" id="${adId}"></div>
     `;
     
@@ -154,9 +133,19 @@ function createAdCard() {
 function handleChannelClick(item) {
     // Store channel data for later playback
     pendingChannelData = item;
+    adOpened = true;
     
-    // Open smart link ad in external browser
-    window.open(SMARTLINK_URL, '_blank');
+    // Open smart link ad in external browser (this will be caught by shouldOverrideUrlLoading)
+    window.location.href = SMARTLINK_URL;
+    
+    // Fallback: Play immediately after short delay if ad doesn't open
+    setTimeout(() => {
+        if (pendingChannelData && window.Android && window.Android.playChannel) {
+            window.Android.playChannel(JSON.stringify(pendingChannelData));
+            pendingChannelData = null;
+            adOpened = false;
+        }
+    }, 2000);
 }
 
 // Render Grid
@@ -164,7 +153,7 @@ function renderGrid(data) {
     grid.innerHTML = '';
     
     if (data.length === 0) {
-        grid.innerHTML = `<div class="empty-state">No channels match your search</div>`;
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-dim);">No channels match your search</div>`;
         return;
     }
 
@@ -195,29 +184,27 @@ function renderGrid(data) {
 
 // When user returns to the app, play the pending channel
 document.addEventListener('visibilitychange', function() {
-    if (!document.hidden && pendingChannelData) {
-        // User returned to the app, play the channel
-        if (window.Android && window.Android.playChannel) {
-            window.Android.playChannel(JSON.stringify(pendingChannelData));
-        } else {
-            console.log("Playing:", pendingChannelData.title, pendingChannelData.url);
-        }
-        // Clear pending data
-        pendingChannelData = null;
+    if (!document.hidden && pendingChannelData && adOpened) {
+        setTimeout(() => {
+            if (window.Android && window.Android.playChannel) {
+                window.Android.playChannel(JSON.stringify(pendingChannelData));
+            }
+            pendingChannelData = null;
+            adOpened = false;
+        }, 500);
     }
 });
 
 // Alternative: use focus event as backup
 window.addEventListener('focus', function() {
-    if (pendingChannelData) {
+    if (pendingChannelData && adOpened) {
         setTimeout(() => {
             if (window.Android && window.Android.playChannel) {
                 window.Android.playChannel(JSON.stringify(pendingChannelData));
-            } else {
-                console.log("Playing:", pendingChannelData.title, pendingChannelData.url);
             }
             pendingChannelData = null;
-        }, 300);
+            adOpened = false;
+        }, 500);
     }
 });
 
