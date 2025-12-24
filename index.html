@@ -75,36 +75,7 @@
             pointer-events: none;
         }
 
-        .categories {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding: 12px 0 4px 0;
-            max-width: 800px;
-            margin: 0 auto;
-            scrollbar-width: none;
-        }
-
-        .categories::-webkit-scrollbar { display: none; }
-
-        .cat-chip {
-            padding: 8px 18px;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 100px;
-            color: var(--text-dim);
-            font-size: 13px;
-            font-weight: 500;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .cat-chip.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
+        /* Removed categories styles completely */
 
         /* Responsive Grid */
         .main-content {
@@ -299,12 +270,7 @@
             <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             <input type="text" id="searchInput" placeholder="Search for channels..." autocomplete="off">
         </div>
-        <div class="categories" id="categoriesBox">
-            <button class="cat-chip active" data-cat="All">All Channels</button>
-            <button class="cat-chip" data-cat="Sports">Sports</button>
-            <button class="cat-chip" data-cat="News">News</button>
-            <button class="cat-chip" data-cat="Movies">Movies</button>
-        </div>
+        <!-- Removed categories section completely -->
     </div>
 
     <div id="error-msg" style="background: rgba(239, 68, 68, 0.1); color: #f87171; padding: 12px; margin: 16px; border-radius: 8px; text-align: center; display: none;"></div>
