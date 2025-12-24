@@ -1,7 +1,7 @@
 // API Configuration
 const API_URL = 'https://static-crane-seeutech-17dd4df3.koyeb.app/api/channels';
 const SMARTLINK_URL = 'https://staggermeaningless.com/djr63xfh5?key=0594e81080ace7ae2229d79efcbc8072';
-const AD_FREQUENCY = 6; // Show ad after every 6 channels
+const AD_FREQUENCY = 5; // Show ad after every 6 channels
 
 // Ad Configuration
 const AD_CONFIG = {
@@ -99,49 +99,19 @@ function createAdCard() {
     
     adCard.innerHTML = `
         <div class="ad-label">ADVERTISEMENT</div>
-        <div class="ad-container" id="${adId}"></div>
+        <div class="ad-container" id="${adId}">
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : '${AD_CONFIG.key}',
+                    'format' : '${AD_CONFIG.format}',
+                    'height' : ${AD_CONFIG.height},
+                    'width' : ${AD_CONFIG.width},
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="${AD_CONFIG.scriptUrl}"></script>
+        </div>
     `;
-    
-    // Wait for element to be in DOM
-    requestAnimationFrame(() => {
-        const adContainer = document.getElementById(adId);
-        if (!adContainer) return;
-        
-        // Method 1: Try direct document.write approach (most compatible)
-        const iframe = document.createElement('iframe');
-        iframe.style.cssText = 'width:100%;height:270px;border:none;overflow:hidden;';
-        iframe.setAttribute('scrolling', 'no');
-        iframe.setAttribute('frameborder', '0');
-        
-        adContainer.appendChild(iframe);
-        
-        const iframeDoc = iframe.contentWindow.document;
-        iframeDoc.open();
-        iframeDoc.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body { margin: 0; padding: 10px; text-align: center; background: #0a0a0c; }
-                    * { box-sizing: border-box; }
-                </style>
-            </head>
-            <body>
-                <script type="text/javascript">
-                    atOptions = {
-                        'key' : '${AD_CONFIG.key}',
-                        'format' : '${AD_CONFIG.format}',
-                        'height' : ${AD_CONFIG.height},
-                        'width' : ${AD_CONFIG.width},
-                        'params' : {}
-                    };
-                </script>
-                <script type="text/javascript" src="${AD_CONFIG.scriptUrl}"></script>
-            </body>
-            </html>
-        `);
-        iframeDoc.close();
-    });
     
     return adCard;
 }
