@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Channels</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            padding-bottom: 20px;
+        }
+        
+        .header-container {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .header-title {
+            color: white;
+        }
+        
+        .header-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-title p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .stats {
+            text-align: right;
+        }
+        
+        .stats-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stats-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 2px;
+        }
+        
+        .search-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .clear-search {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .clear-search:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .clear-search.show {
+            display: flex;
+        }
+        
+        .categories-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .categories-container::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .category-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .category-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .category-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .loading {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+            font-size: 16px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+        }
+        
+        .loading-subtext {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        @media (min-width: 640px) {
+            .channels-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 18px;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .channels-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 20px;
+            }
+        }
+        
+        .channel-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+        
+        .channel-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .channel-card:active {
+            transform: translateY(-4px) scale(1.01);
+        }
+        
+        .channel-logo-container {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            overflow: hidden;
+        }
+        
+        .channel-logo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .channel-card:hover .channel-logo {
+            transform: scale(1.1);
+        }
+        
+        .channel-info {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .channel-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+            min-height: 36px;
+        }
+        
+        .channel-group {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            background: rgba(102, 126, 234, 0.2);
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            font-weight: 500;
+        }
+        
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .channel-card:hover .play-overlay {
+            opacity: 1;
+        }
+        
+        .play-button {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .channel-card:hover .play-button {
+            transform: scale(1);
+        }
+        
+        .play-button::after {
+            content: '▶';
+            margin-left: 3px;
+            color: #667eea;
+        }
+        
+        .play-text {
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .no-results {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+        }
+        
+        .no-results-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .no-results-text {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .no-results-subtext {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .retry-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .retry-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <div class="header">
+            <div class="header-top">
+                <div class="logo-section">
+                    <div class="logo-icon">📺</div>
+                    <div class="header-title">
+                        <h1>LiveTV</h1>
+                        <p>Stream your favorite channels</p>
+                    </div>
+                </div>
+                <div class="stats">
+                    <div class="stats-number" id="channelCount">0</div>
+                    <div class="stats-label">Channels</div>
+                </div>
+            </div>
+            
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput" 
+                    placeholder="Search channels..."
+                    autocomplete="off"
+                >
+                <button class="clear-search" id="clearSearch">✕</button>
+            </div>
+            
+            <div class="categories-container" id="categoriesContainer"></div>
+        </div>
+    </div>
+
+    <div id="loadingContainer" class="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading channels...</div>
+        <div class="loading-subtext">Please wait while we fetch the latest content</div>
+    </div>
+
+    <div id="errorContainer" style="display: none;"></div>
+    
+    <div id="channelsGrid" class="channels-grid"></div>
+
+    <script>
+        const API_URL = 'https://static-crane-seeutech-17dd4df3.koyeb.app/api/channels';
+        let channelsData = [];
+        let filteredChannels = [];
+        let categories = [];
+        let selectedCategory = 'All';
+        let isProcessingClick = false;
+        let searchTerm = '';
+
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const clearSearch = document.getElementById('clearSearch');
+        const channelCount = document.getElementById('channelCount');
+
+        // Check if running in Android WebView
+        const isAndroidWebView = typeof Android !== 'undefined';
+
+        // Fetch channels from API
+        async function loadChannels() {
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    channelsData = result.data;
+                    filteredChannels = channelsData;
+                    extractCategories();
+                    updateChannelCount();
+                    displayChannels(filteredChannels);
+                } else {
+                    showError('No channels available at the moment');
+                }
+            } catch (error) {
+                showError('Failed to load channels. Please check your connection.');
+                console.error('Error loading channels:', error);
+            } finally {
+                document.getElementById('loadingContainer').style.display = 'none';
+            }
+        }
+
+        // Extract unique categories
+        function extractCategories() {
+            const categorySet = new Set(['All']);
+            channelsData.forEach(channel => {
+                if (channel.groupTitle) {
+                    categorySet.add(channel.groupTitle);
+                }
+            });
+            categories = Array.from(categorySet);
+            displayCategories();
+        }
+
+        // Display categories
+        function displayCategories() {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+
+            categories.forEach(category => {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                if (category === selectedCategory) {
+                    btn.classList.add('active');
+                }
+                btn.textContent = category;
+                btn.onclick = () => selectCategory(category);
+                container.appendChild(btn);
+            });
+        }
+
+        // Select category
+        function selectCategory(category) {
+            selectedCategory = category;
+            filterChannels();
+            displayCategories();
+        }
+
+        // Filter channels
+        function filterChannels() {
+            filteredChannels = channelsData.filter(channel => {
+                const matchesCategory = selectedCategory === 'All' || channel.groupTitle === selectedCategory;
+                const matchesSearch = searchTerm === '' || 
+                    channel.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (channel.groupTitle && channel.groupTitle.toLowerCase().includes(searchTerm.toLowerCase()));
+                
+                return matchesCategory && matchesSearch;
+            });
+            
+            updateChannelCount();
+            displayChannels(filteredChannels);
+        }
+
+        // Update channel count
+        function updateChannelCount() {
+            channelCount.textContent = filteredChannels.length;
+        }
+
+        // Display channels in grid
+        function displayChannels(channels) {
+            const grid = document.getElementById('channelsGrid');
+            grid.innerHTML = '';
+
+            if (channels.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <div class="no-results-text">No channels found</div>
+                        <div class="no-results-subtext">Try adjusting your search or category filter</div>
+                    </div>
+                `;
+                return;
+            }
+
+            channels.forEach(channel => {
+                const card = document.createElement('div');
+                card.className = 'channel-card';
+                card.onclick = () => handleChannelClick(channel);
+
+                card.innerHTML = `
+                    <div class="channel-logo-container">
+                        <img src="${channel.logo || 'https://via.placeholder.com/200x200?text=No+Logo'}" 
+                             alt="${channel.title}" 
+                             class="channel-logo"
+                             onerror="this.src='https://via.placeholder.com/200x200?text=No+Logo'">
+                    </div>
+                    <div class="channel-info">
+                        <div class="channel-name">${channel.title || 'Unknown Channel'}</div>
+                        <div class="channel-group">${channel.groupTitle || 'General'}</div>
+                    </div>
+                    <div class="play-overlay">
+                        <div class="play-button"></div>
+                        <div class="play-text">WATCH NOW</div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Handle channel click
+        function handleChannelClick(channel) {
+            if (isProcessingClick) return;
+            isProcessingClick = true;
+
+            console.log('Playing channel:', channel.title);
+            
+            // Play channel via Android interface
+            if (isAndroidWebView) {
+                try {
+                    Android.playChannel(JSON.stringify(channel));
+                } catch (error) {
+                    console.error('Error calling Android interface:', error);
+                    if (Android.showMessage) {
+                        Android.showMessage('Error playing channel: ' + error.message);
+                    }
+                }
+            } else {
+                // For browser testing
+                console.log('Channel data:', channel);
+                alert('Channel: ' + channel.title + '\nURL: ' + channel.url);
+            }
+            
+            setTimeout(() => {
+                isProcessingClick = false;
+            }, 1000);
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `
+                <div class="error">
+                    <div class="error-icon">⚠️</div>
+                    <p>${message}</p>
+                    <button class="retry-btn" onclick="retryLoad()">Retry</button>
+                </div>
+            `;
+            errorContainer.style.display = 'block';
+        }
+
+        // Retry loading
+        function retryLoad() {
+            document.getElementById('errorContainer').style.display = 'none';
+            document.getElementById('loadingContainer').style.display = 'block';
+            loadChannels();
+        }
+
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            filterChannels();
+            
+            if (searchTerm.length > 0) {
+                clearSearch.classList.add('show');
+            } else {
+                clearSearch.classList.remove('show');
+            }
+        });
+
+        clearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            searchTerm = '';
+            clearSearch.classList.remove('show');
+            filterChannels();
+        });
+
+        // Load channels on page load
+        window.addEventListener('load', () => {
+            loadChannels();
+        });
+    </script>
+</body>
+</html>
