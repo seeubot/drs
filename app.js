@@ -7,7 +7,7 @@ const AD_FREQUENCY = 6; // Show ad after every 6 channels
 const AD_CONFIG = {
     key: 'e370435c2937a2c6a0c3fa900e0430ac',
     format: 'iframe',
-    height: 100,
+    height: 250,
     width: 300,
     scriptUrl: 'https://staggermeaningless.com/e370435c2937a2c6a0c3fa900e0430ac/invoke.js'
 };
@@ -97,21 +97,63 @@ function createAdCard() {
     
     const adId = 'ad-' + Math.random().toString(36).substr(2, 9);
     
+    // Create the ad card structure
     adCard.innerHTML = `
         <div class="ad-label">ADVERTISEMENT</div>
-        <div class="ad-container" id="${adId}">
-            <script type="text/javascript">
-                atOptions = {
-                    'key' : '${AD_CONFIG.key}',
-                    'format' : '${AD_CONFIG.format}',
-                    'height' : ${AD_CONFIG.height},
-                    'width' : ${AD_CONFIG.width},
-                    'params' : {}
-                };
-            </script>
-            <script type="text/javascript" src="${AD_CONFIG.scriptUrl}"></script>
-        </div>
+        <div class="ad-container" id="${adId}"></div>
     `;
+    
+    // After DOM insertion, create iframe and load ad
+    setTimeout(() => {
+        const container = document.getElementById(adId);
+        if (!container) return;
+        
+        // Create iframe for ad isolation
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:100%;height:120px;border:none;display:block;background:#0a0a0c;';
+        iframe.setAttribute('scrolling', 'no');
+        iframe.setAttribute('frameborder', '0');
+        
+        container.appendChild(iframe);
+        
+        // Write ad code into iframe
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body {
+                        margin: 0;
+                        padding: 10px;
+                        background: #0a0a0c;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 100px;
+                        overflow: hidden;
+                    }
+                </style>
+            </head>
+            <body>
+                <script type="text/javascript">
+                    atOptions = {
+                        'key': '${AD_CONFIG.key}',
+                        'format': '${AD_CONFIG.format}',
+                        'height': ${AD_CONFIG.height},
+                        'width': ${AD_CONFIG.width},
+                        'params': {}
+                    };
+                <\/script>
+                <script type="text/javascript" src="${AD_CONFIG.scriptUrl}"><\/script>
+            </body>
+            </html>
+        `);
+        doc.close();
+        
+    }, 50);
     
     return adCard;
 }
