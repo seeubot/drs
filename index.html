@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stream Channels</title>
+    <title>Stream Search</title>
     <style>
         :root {
-            --bg-color: #0a0a0c;
-            --card-bg: #161618;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --telegram: #0088cc;
-            --text-main: #ffffff;
-            --text-dim: #94a3b8;
-            --search-bg: #1e1e22;
-            --search-focus: rgba(59, 130, 246, 0.15);
-            --border-color: rgba(255, 255, 255, 0.08);
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #10b981;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --search-bg: rgba(255, 255, 255, 0.08);
+            --search-focus: rgba(139, 92, 246, 0.25);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --gradient-start: #0f172a;
+            --gradient-end: #1e1b4b;
         }
 
         * {
@@ -23,478 +25,683 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-            outline: none;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.4;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
-            font-feature-settings: "kern";
         }
 
-        /* Enhanced Navigation */
-        .nav-wrapper {
-            position: sticky;
+        /* Centered Search Interface */
+        .search-container {
+            position: fixed;
             top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
             z-index: 100;
-            background: var(--bg-color);
-            padding: clamp(12px, 3vw, 20px) clamp(16px, 4vw, 24px);
-            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .search-container.hidden {
+            transform: translateY(-100%);
+        }
+
+        .search-icon-large {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 40px;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.3));
+        }
+
+        .search-title {
+            font-size: clamp(24px, 4vw, 36px);
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+        }
+
+        .search-subtitle {
+            font-size: clamp(14px, 2vw, 16px);
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+            text-align: center;
+            max-width: 300px;
+            line-height: 1.6;
+        }
+
+        .search-input-container {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--search-bg);
+            border: 2px solid transparent;
+            padding: 20px 60px 20px 30px;
+            border-radius: 16px;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.3s ease;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
         }
 
-        .search-bar {
-            max-width: min(1200px, 100%);
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .search-bar input {
-            width: 100%;
-            background: var(--search-bg);
-            border: 2px solid var(--border-color);
-            padding: clamp(12px, 3vw, 16px) 20px clamp(12px, 3vw, 16px) 52px;
-            border-radius: 12px;
-            color: white;
-            font-size: clamp(16px, 2vw, 18px);
-            outline: none;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 400;
-            letter-spacing: 0.3px;
-        }
-
-        .search-bar input:focus {
-            border-color: var(--accent);
+        .search-input:focus {
+            border-color: var(--accent-primary);
             background: var(--search-focus);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            transform: translateY(-1px);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2),
+                        0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
         }
 
-        .search-bar input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
+        .search-input::placeholder {
+            color: var(--text-secondary);
             font-weight: 400;
         }
 
-        .search-icon {
+        .search-button {
             position: absolute;
-            left: 18px;
+            right: 15px;
             top: 50%;
             transform: translateY(-50%);
-            opacity: 0.6;
-            pointer-events: none;
-            transition: opacity 0.2s;
-        }
-
-        .search-bar input:focus + .search-icon {
-            opacity: 1;
-            color: var(--accent);
-        }
-
-        /* Dynamic Grid System */
-        .main-content {
-            padding: clamp(16px, 3vw, 24px);
-            max-width: 1920px;
-            margin: 0 auto;
-            min-height: calc(100vh - 80px);
-        }
-
-        .channels-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: clamp(12px, 2vw, 20px);
-            will-change: contents;
-            opacity: 0;
-            animation: fadeIn 0.3s ease forwards;
-        }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 480px) {
-            .channels-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 12px;
-            }
-        }
-
-        @media (min-width: 481px) and (max-width: 768px) {
-            .channels-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 16px;
-            }
-        }
-
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .channels-grid {
-                grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-                gap: 18px;
-            }
-        }
-
-        @media (min-width: 1025px) and (max-width: 1440px) {
-            .channels-grid {
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap: 20px;
-            }
-        }
-
-        @media (min-width: 1441px) and (max-width: 1920px) {
-            .channels-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 24px;
-            }
-        }
-
-        @media (min-width: 1921px) {
-            .channels-grid {
-                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-                gap: 28px;
-            }
-        }
-
-        /* Optimized Channel Card */
-        .channel-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            overflow: hidden;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            border: 1px solid var(--border-color);
-            aspect-ratio: 1/1.2;
-            display: flex;
-            flex-direction: column;
-            transform: translateZ(0);
-            will-change: transform, box-shadow;
-            position: relative;
-            opacity: 0;
-            animation: cardSlideUp 0.4s ease forwards;
-            animation-delay: calc(var(--card-index) * 0.05s);
-        }
-
-        .channel-card:hover {
-            transform: translateY(-4px) scale(1.02);
-            border-color: var(--accent);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .channel-card:focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-        }
-
-        .channel-card:active {
-            transform: translateY(-2px) scale(1.01);
-            transition-duration: 0.1s;
-        }
-
-        .logo-box {
-            flex: 1;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: clamp(12px, 3vw, 20px);
-            background: linear-gradient(145deg, #1c1c1f, #17171a);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-button:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .search-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: white;
+            stroke-width: 2.5;
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 65px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 5px;
+            display: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .clear-search:hover {
+            color: var(--text-primary);
+        }
+
+        /* Channels Container (Initially Hidden) */
+        .channels-container {
+            display: none;
+            padding: 80px 20px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        .channels-container.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .results-title {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .results-count {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .back-button:hover {
+            background: var(--bg-card);
+            transform: translateX(-5px);
+        }
+
+        .back-button svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+        }
+
+        /* Channels Grid */
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        /* Channel Card */
+        .channel-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardAppear 0.5s ease forwards;
+        }
+
+        .channel-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4),
+                        0 0 0 1px rgba(139, 92, 246, 0.2);
+        }
+
+        .channel-logo {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
             position: relative;
             overflow: hidden;
         }
 
-        .logo-box::before {
+        .channel-logo::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
         }
 
-        .channel-card:hover .logo-box::before {
-            opacity: 1;
+        .channel-card:hover .channel-logo::before {
+            transform: translateX(0);
         }
 
-        .logo-box img {
-            max-width: 85%;
-            max-height: 85%;
+        .channel-logo img {
+            max-width: 80%;
+            max-height: 80%;
             object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
             transition: transform 0.3s ease;
-            will-change: transform;
         }
 
-        .channel-card:hover .logo-box img {
-            transform: scale(1.08);
-        }
-
-        .channel-meta {
-            padding: clamp(10px, 2vw, 14px);
-            background: var(--card-bg);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            position: relative;
-            z-index: 1;
-        }
-
-        .channel-name {
-            font-size: clamp(14px, 1.8vw, 16px);
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 4px;
-            letter-spacing: 0.2px;
-        }
-
-        .channel-tag {
-            font-size: clamp(11px, 1.4vw, 12px);
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            font-weight: 500;
-            opacity: 0.8;
-        }
-
-        /* Enhanced Telegram Button */
-        .telegram-btn {
-            position: fixed;
-            bottom: clamp(16px, 4vw, 24px);
-            right: clamp(16px, 4vw, 24px);
-            width: clamp(56px, 8vw, 64px);
-            height: clamp(56px, 8vw, 64px);
-            background-color: var(--telegram);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-decoration: none;
-            border: none;
-            box-shadow: 0 4px 20px rgba(0, 136, 204, 0.4);
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .telegram-btn:hover {
-            transform: scale(1.1) rotate(5deg);
-            box-shadow: 0 8px 32px rgba(0, 136, 204, 0.6);
-        }
-
-        .telegram-btn:focus-visible {
-            outline: 2px solid white;
-            outline-offset: 4px;
+        .channel-card:hover .channel-logo img {
             transform: scale(1.05);
         }
 
-        .telegram-btn svg {
-            width: clamp(24px, 4vw, 28px);
-            height: clamp(24px, 4vw, 28px);
-            fill: white;
-            transition: transform 0.3s;
+        .channel-info {
+            padding: 24px;
         }
 
-        .telegram-btn:hover svg {
-            transform: scale(1.1);
+        .channel-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
         }
 
-        /* Enhanced Loading State */
-        #loader {
+        .channel-category {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: 60px;
-            gap: 20px;
-            min-height: 300px;
+            gap: 6px;
+        }
+
+        .channel-category::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .channel-action {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            color: var(--accent-primary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .channel-action:hover {
+            background: rgba(139, 92, 246, 0.2);
+            transform: translateX(5px);
+        }
+
+        .channel-action svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+        }
+
+        /* Empty State */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-state-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading.visible {
+            display: block;
         }
 
         .spinner {
-            width: clamp(40px, 8vw, 48px);
-            height: clamp(40px, 8vw, 48px);
+            width: 60px;
+            height: 60px;
             border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--accent);
+            border-top-color: var(--accent-primary);
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
         }
 
-        .loader-text {
-            color: var(--text-dim);
-            font-size: clamp(14px, 2vw, 16px);
+        /* Error State */
+        .error-state {
+            display: none;
             text-align: center;
-            animation: pulse 2s infinite;
+            padding: 60px 20px;
+            color: #ef4444;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .error-state.visible {
+            display: block;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-
+        /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
 
-        @keyframes cardSlideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
+        @keyframes cardAppear {
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        /* Enhanced Error Message */
-        #error-msg {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
-            color: #fca5a5;
-            padding: clamp(14px, 3vw, 18px);
-            margin: clamp(16px, 3vw, 24px);
-            border-radius: 12px;
-            text-align: center;
-            display: none;
-            font-size: clamp(14px, 2vw, 16px);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            backdrop-filter: blur(10px);
-            animation: shake 0.5s ease;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .search-icon-large {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 30px;
+            }
+            
+            .search-input {
+                padding: 18px 50px 18px 20px;
+                font-size: 16px;
+            }
+            
+            .search-button {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .channels-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 16px;
+            }
+            
+            .channel-logo {
+                height: 150px;
+            }
         }
 
-        /* Enhanced Empty State */
-        .empty-state {
-            grid-column: 1/-1;
-            text-align: center;
-            padding: clamp(40px, 8vw, 80px) 20px;
-            color: var(--text-dim);
-            font-size: clamp(16px, 2.5vw, 18px);
-            opacity: 0.7;
+        @media (max-width: 480px) {
+            .search-container {
+                padding: 16px;
+            }
+            
+            .search-input {
+                padding: 16px 50px 16px 20px;
+            }
+            
+            .channels-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                gap: 20px;
+                align-items: flex-start;
+            }
         }
 
-        .empty-state svg {
-            width: clamp(48px, 10vw, 64px);
-            height: clamp(48px, 10vw, 64px);
-            margin-bottom: 20px;
-            opacity: 0.5;
+        /* Dark mode adjustments */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #ffffff;
+                --bg-secondary: #f8fafc;
+                --bg-card: #ffffff;
+                --text-primary: #1e293b;
+                --text-secondary: #64748b;
+                --search-bg: rgba(0, 0, 0, 0.05);
+                --border-color: rgba(0, 0, 0, 0.1);
+                --gradient-start: #ffffff;
+                --gradient-end: #f1f5f9;
+            }
+            
+            .channel-logo {
+                background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            }
         }
 
-        /* Performance optimizations */
+        /* Reduced motion */
         @media (prefers-reduced-motion: reduce) {
             * {
                 animation-duration: 0.01ms !important;
                 animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
             }
-            
-            .channel-card {
-                animation: none !important;
-            }
-        }
-
-        /* Touch device optimizations */
-        @media (hover: none) and (pointer: coarse) {
-            .channel-card:hover {
-                transform: none;
-            }
-            
-            .channel-card:active {
-                transform: scale(0.98);
-                opacity: 0.8;
-            }
-            
-            .telegram-btn:hover {
-                transform: none;
-            }
-        }
-
-        /* High contrast mode support */
-        @media (prefers-contrast: high) {
-            :root {
-                --border-color: #ffffff;
-                --text-dim: #cccccc;
-            }
-            
-            .channel-card {
-                border-width: 2px;
-            }
-        }
-
-        /* Dark/light mode support */
-        @media (prefers-color-scheme: light) {
-            :root {
-                --bg-color: #f8fafc;
-                --card-bg: #ffffff;
-                --text-main: #1e293b;
-                --text-dim: #64748b;
-                --search-bg: #f1f5f9;
-                --border-color: #e2e8f0;
-                --search-focus: rgba(59, 130, 246, 0.1);
-            }
-            
-            .logo-box {
-                background: linear-gradient(145deg, #f1f5f9, #e2e8f0);
-            }
-            
-            .channel-meta {
-                border-top-color: #f1f5f9;
-            }
-        }
-
-        /* Print styles */
-        @media print {
-            .telegram-btn,
-            .search-bar input {
-                display: none;
-            }
-            
-            .channel-card {
-                break-inside: avoid;
-                border: 1px solid #ccc;
-            }
         }
     </style>
 </head>
 <body>
 
-    <div class="nav-wrapper">
-        <div class="search-bar">
-            <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-            <input type="text" id="searchInput" placeholder="Type at least 3 letters to search channels..." autocomplete="off">
+    <!-- Centered Search Screen -->
+    <div class="search-container" id="searchContainer">
+        <svg class="search-icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        
+        <h1 class="search-title">Discover Channels</h1>
+        <p class="search-subtitle">Search for streaming channels by name or category</p>
+        
+        <div class="search-input-container">
+            <input 
+                type="text" 
+                class="search-input" 
+                id="searchInput"
+                placeholder="Type at least 3 characters to search..."
+                autocomplete="off"
+            >
+            <button class="clear-search" id="clearSearch">Clear</button>
+            <button class="search-button" id="searchButton">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </button>
         </div>
     </div>
 
-    <div id="error-msg"></div>
-
-    <main class="main-content">
-        <div id="loader" class="loader">
-            <div class="spinner"></div>
-            <div class="loader-text">Type at least 3 letters to load channels...</div>
+    <!-- Channels Results (Hidden Initially) -->
+    <div class="channels-container" id="channelsContainer">
+        <div class="results-header">
+            <div>
+                <h2 class="results-title">Search Results</h2>
+                <div class="results-count" id="resultsCount">0 channels found</div>
+            </div>
+            <button class="back-button" id="backButton">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Back to Search
+            </button>
         </div>
-        <div id="grid" class="channels-grid"></div>
-    </main>
 
-    <a href="https://t.me/+t9rJ42tcRJI2MDFl" target="_blank" class="telegram-btn" aria-label="Join Telegram" tabindex="0">
-        <svg viewBox="0 0 24 24">
-            <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.56 8.16l-1.36 5.44c-.17.58-.34.77-.44.78-.22.02-.4-.15-.61-.29-.34-.22-.53-.36-.87-.58-.38-.25-.13-.39.08-.62.06-.06 1.06-.97 1.08-1.05.002-.01-.001-.05-.03-.06-.03-.01-.07-.01-.1 0-.04.01-.7.44-1.97 1.3-.19.13-.35.19-.5.19-.17 0-.49-.09-.72-.17-.29-.09-.52-.14-.5-.3.01-.08.13-.17.35-.26 1.36-.59 2.26-.98 2.72-1.17 1.29-.54 1.56-.63 1.73-.63.04 0 .13.01.18.05.05.04.06.09.07.13.004.04 0 .08-.002.12z"/>
-        </svg>
-    </a>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Searching channels...</p>
+        </div>
 
-    <script src="app.js"></script>
+        <div class="error-state" id="errorState">
+            <p>An error occurred while searching. Please try again.</p>
+        </div>
+
+        <div class="channels-grid" id="channelsGrid">
+            <!-- Channels will be inserted here -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const searchContainer = document.getElementById('searchContainer');
+            const channelsContainer = document.getElementById('channelsContainer');
+            const searchInput = document.getElementById('searchInput');
+            const clearSearch = document.getElementById('clearSearch');
+            const searchButton = document.getElementById('searchButton');
+            const backButton = document.getElementById('backButton');
+            const channelsGrid = document.getElementById('channelsGrid');
+            const loading = document.getElementById('loading');
+            const errorState = document.getElementById('errorState');
+            const resultsCount = document.getElementById('resultsCount');
+
+            // Sample channels data
+            const channels = [
+                { id: 1, name: 'Prime Video', category: 'Movies & TV', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' },
+                { id: 2, name: 'Netflix', category: 'Streaming', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' },
+                { id: 3, name: 'Disney+', category: 'Family', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' },
+                { id: 4, name: 'HBO Max', category: 'Entertainment', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' },
+                { id: 5, name: 'Hulu', category: 'TV Shows', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' },
+                { id: 6, name: 'YouTube TV', category: 'Live TV', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' },
+                { id: 7, name: 'Apple TV+', category: 'Original Content', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' },
+                { id: 8, name: 'Paramount+', category: 'Movies', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' },
+                { id: 9, name: 'Peacock', category: 'Streaming', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' },
+                { id: 10, name: 'ESPN+', category: 'Sports', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' },
+                { id: 11, name: 'Discovery+', category: 'Documentaries', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' },
+                { id: 12, name: 'Crunchyroll', category: 'Anime', logo: 'https://cdn-icons-png.flaticon.com/512/732/732228.png' }
+            ];
+
+            // Event Listeners
+            searchInput.addEventListener('input', function(e) {
+                clearSearch.style.display = e.target.value.length > 0 ? 'block' : 'none';
+            });
+
+            clearSearch.addEventListener('click', function() {
+                searchInput.value = '';
+                clearSearch.style.display = 'none';
+                searchInput.focus();
+            });
+
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && searchInput.value.length >= 3) {
+                    performSearch();
+                }
+            });
+
+            backButton.addEventListener('click', function() {
+                searchContainer.classList.remove('hidden');
+                channelsContainer.classList.remove('visible');
+                searchInput.value = '';
+                clearSearch.style.display = 'none';
+                searchInput.focus();
+            });
+
+            // Perform search function
+            function performSearch() {
+                const query = searchInput.value.trim();
+                
+                if (query.length < 3) {
+                    return;
+                }
+
+                // Hide search, show loading
+                searchContainer.classList.add('hidden');
+                channelsContainer.classList.add('visible');
+                loading.classList.add('visible');
+                errorState.classList.remove('visible');
+                channelsGrid.innerHTML = '';
+
+                // Simulate API delay
+                setTimeout(() => {
+                    const filteredChannels = channels.filter(channel =>
+                        channel.name.toLowerCase().includes(query.toLowerCase()) ||
+                        channel.category.toLowerCase().includes(query.toLowerCase())
+                    );
+
+                    displayResults(filteredChannels);
+                }, 800);
+            }
+
+            // Display results function
+            function displayResults(results) {
+                loading.classList.remove('visible');
+                
+                if (results.length === 0) {
+                    channelsGrid.innerHTML = `
+                        <div class="empty-state">
+                            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <h3>No channels found</h3>
+                            <p>Try searching with different keywords or browse categories</p>
+                            <button class="back-button" onclick="document.getElementById('backButton').click()">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Back to Search
+                            </button>
+                        </div>
+                    `;
+                    resultsCount.textContent = '0 channels found';
+                    return;
+                }
+
+                resultsCount.textContent = `${results.length} channel${results.length !== 1 ? 's' : ''} found`;
+
+                // Create channel cards
+                results.forEach((channel, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'channel-card';
+                    card.style.animationDelay = `${index * 0.05}s`;
+                    
+                    card.innerHTML = `
+                        <div class="channel-logo">
+                            <img src="${channel.logo}" alt="${channel.name} Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/732/732228.png'">
+                        </div>
+                        <div class="channel-info">
+                            <h3 class="channel-name">${channel.name}</h3>
+                            <div class="channel-category">${channel.category}</div>
+                            <div class="channel-action">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Visit Channel
+                            </div>
+                        </div>
+                    `;
+
+                    // Add click handler for channel card
+                    card.addEventListener('click', function() {
+                        // Simulate channel click - in real app, this would navigate to channel page
+                        alert(`Opening ${channel.name}...`);
+                    });
+
+                    channelsGrid.appendChild(card);
+                });
+            }
+
+            // Focus search input on page load
+            searchInput.focus();
+        });
+    </script>
 </body>
 </html>
