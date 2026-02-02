@@ -15,6 +15,7 @@
             --card-bg: #1c232b;
             --text-primary: #ffffff;
             --text-secondary: #8899a6;
+            --player-bg: #000000;
         }
         
         body {
@@ -48,6 +49,7 @@
             margin-bottom: 20px;
             height: 100%;
             position: relative;
+            cursor: pointer;
         }
         
         .content-card:hover {
@@ -66,6 +68,11 @@
             height: 200px;
             object-fit: cover;
             background-color: #2d3746;
+            transition: transform 0.3s ease;
+        }
+        
+        .content-card:hover .content-image {
+            transform: scale(1.05);
         }
         
         .type-badge {
@@ -76,6 +83,7 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+            z-index: 2;
         }
         
         .movie-badge {
@@ -95,6 +103,51 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+            z-index: 2;
+        }
+        
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+        
+        .content-card:hover .play-overlay {
+            opacity: 1;
+        }
+        
+        .play-btn {
+            background: rgba(52, 152, 219, 0.9);
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform: scale(0.8);
+        }
+        
+        .content-card:hover .play-btn {
+            transform: scale(1);
+        }
+        
+        .play-btn:hover {
+            background: var(--movie-color);
+            transform: scale(1.1);
         }
         
         .card-content {
@@ -224,10 +277,20 @@
             padding: 10px;
             margin-bottom: 8px;
             transition: all 0.2s ease;
+            cursor: pointer;
         }
         
         .episode-item:hover {
             background: #3a4556;
+        }
+        
+        .episode-play-btn {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .episode-item:hover .episode-play-btn {
+            opacity: 1;
         }
         
         .pagination {
@@ -262,12 +325,178 @@
             margin-bottom: 20px;
             opacity: 0.5;
         }
+        
+        /* Player Controls */
+        .player-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(28, 35, 43, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #2d3746;
+            border-radius: 25px;
+            padding: 10px 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .player-controls.show {
+            opacity: 1;
+        }
+        
+        .player-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            padding: 5px;
+        }
+        
+        .player-btn:hover {
+            color: var(--movie-color);
+        }
+        
+        .player-title {
+            font-size: 14px;
+            margin: 0 10px;
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Quality Selector */
+        .quality-badge {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            z-index: 2;
+        }
+        
+        .quality-selector {
+            position: absolute;
+            bottom: 40px;
+            left: 10px;
+            background: rgba(28, 35, 43, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #2d3746;
+            border-radius: 8px;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 3;
+        }
+        
+        .quality-selector.show {
+            display: flex;
+        }
+        
+        .quality-option {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 12px;
+        }
+        
+        .quality-option:hover, .quality-option.active {
+            background: var(--movie-color);
+        }
+        
+        /* Download Button */
+        .download-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            position: relative;
+            flex-grow: 1;
+            height: 4px;
+            background: #2d3746;
+            border-radius: 2px;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+        
+        .progress-bar {
+            position: absolute;
+            height: 100%;
+            background: var(--movie-color);
+            border-radius: 2px;
+            width: 0%;
+        }
+        
+        .progress-time {
+            position: absolute;
+            top: -20px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            display: none;
+        }
+        
+        .progress-container:hover .progress-time {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="spinner"></div>
+    </div>
+
+    <!-- Player Controls (Fixed at Bottom) -->
+    <div class="player-controls" id="playerControls">
+        <button class="player-btn" onclick="playerPrevious()" title="Previous">
+            <i class="bi bi-skip-backward-fill"></i>
+        </button>
+        <button class="player-btn" onclick="playerPlayPause()" id="playPauseBtn" title="Play/Pause">
+            <i class="bi bi-play-fill"></i>
+        </button>
+        <button class="player-btn" onclick="playerNext()" title="Next">
+            <i class="bi bi-skip-forward-fill"></i>
+        </button>
+        <div class="player-title" id="playerTitle">Not Playing</div>
+        <div class="progress-container" onclick="playerSeek(event)">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-time" id="progressTime">0:00 / 0:00</div>
+        </div>
+        <button class="player-btn" onclick="playerMute()" id="muteBtn" title="Mute">
+            <i class="bi bi-volume-up-fill"></i>
+        </button>
+        <button class="player-btn" onclick="playerClose()" title="Close Player">
+            <i class="bi bi-x-lg"></i>
+        </button>
     </div>
 
     <!-- Navigation -->
@@ -279,6 +508,9 @@
             <div class="d-flex align-items-center">
                 <div id="connectionStatus" class="me-3">
                     <span class="badge bg-secondary">Connecting...</span>
+                </div>
+                <div id="playerStatus" class="me-3 d-none">
+                    <span class="badge bg-success" id="nowPlayingBadge">Playing</span>
                 </div>
                 <button class="btn btn-outline-light btn-sm" onclick="showApiConfig()">
                     <i class="bi bi-gear"></i>
@@ -311,6 +543,9 @@
                     <button class="filter-btn" onclick="setFilter('series')" id="filterSeries">
                         <i class="bi bi-tv me-1"></i>
                     </button>
+                    <button class="filter-btn" onclick="showPlayer()" id="showPlayerBtn" title="Show Player">
+                        <i class="bi bi-play-circle me-1"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -331,8 +566,8 @@
                     <div class="stats-label">TV Series</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stats-number" id="totalFeatured">0</div>
-                    <div class="stats-label">Featured</div>
+                    <div class="stats-number" id="nowWatching">0</div>
+                    <div class="stats-label">Now Watching</div>
                 </div>
             </div>
         </div>
@@ -355,6 +590,15 @@
                             <label class="form-label">Items per page</label>
                             <input type="number" id="itemsPerPage" class="form-control bg-dark border-dark text-light" 
                                    value="12" min="1" max="100">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Default Quality</label>
+                            <select id="defaultQuality" class="form-control bg-dark border-dark text-light">
+                                <option value="1080">1080p</option>
+                                <option value="720" selected>720p</option>
+                                <option value="480">480p</option>
+                                <option value="360">360p</option>
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -400,9 +644,50 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="playCurrentContent()" id="playModalBtn">
+                            <i class="bi bi-play-fill"></i> Play
+                        </button>
                         <button type="button" class="btn btn-danger" id="deleteBtn" onclick="deleteContent()">
                             <i class="bi bi-trash"></i> Delete
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Modal -->
+        <div class="modal fade" id="playerModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content" style="background: #000;">
+                    <div class="modal-header border-dark">
+                        <h5 class="modal-title" id="playerModalTitle">Player</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div id="playerContainer" style="width: 100%; height: 500px; background: #000;">
+                            <!-- Player will be embedded here -->
+                        </div>
+                    </div>
+                    <div class="modal-footer border-dark">
+                        <div class="d-flex justify-content-between w-100">
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-light" onclick="changeQuality('1080')">1080p</button>
+                                <button class="btn btn-sm btn-outline-light" onclick="changeQuality('720')">720p</button>
+                                <button class="btn btn-sm btn-outline-light" onclick="changeQuality('480')">480p</button>
+                                <button class="btn btn-sm btn-outline-light" onclick="changeQuality('360')">360p</button>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-light" onclick="downloadContent()">
+                                    <i class="bi bi-download"></i> Download
+                                </button>
+                                <button class="btn btn-sm btn-outline-light" onclick="toggleSubtitles()">
+                                    <i class="bi bi-subtitles"></i> CC
+                                </button>
+                                <button class="btn btn-sm btn-outline-light" onclick="toggleFullscreen()">
+                                    <i class="bi bi-arrows-fullscreen"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -411,11 +696,13 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.10/dist/hls.min.js"></script>
     
     <script>
         // Configuration
         let API_BASE_URL = localStorage.getItem('apiBaseUrl') || 'https://static-crane-seeutech-17dd4df3.koyeb.app';
         let ITEMS_PER_PAGE = parseInt(localStorage.getItem('itemsPerPage')) || 12;
+        let DEFAULT_QUALITY = localStorage.getItem('defaultQuality') || '720';
         let currentPage = 1;
         let totalPages = 1;
         let currentFilter = 'all';
@@ -423,6 +710,21 @@
         let filteredContent = [];
         let isLoading = false;
         let isInitialLoad = true;
+        
+        // Player State
+        let currentPlayer = null;
+        let currentContentId = null;
+        let currentContent = null;
+        let currentQuality = DEFAULT_QUALITY;
+        let isPlaying = false;
+        let playerProgress = 0;
+        let watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || {};
+        let playlist = JSON.parse(localStorage.getItem('playlist')) || [];
+        let currentPlaylistIndex = -1;
+        
+        // HLS Player Instance
+        let hls = null;
+        let videoElement = null;
         
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -512,6 +814,9 @@
                         isInitialLoad = false;
                     }
                     
+                    // Update now watching count
+                    updateNowWatching();
+                    
                     return true;
                 } else {
                     throw new Error(data.message || 'Invalid response format');
@@ -529,6 +834,7 @@
                         filteredContent = [...allContent];
                         renderContentGrid();
                         showNotification('warning', '⚠️ Using cached data (offline mode)');
+                        updateNowWatching();
                         return true;
                     }
                 }
@@ -552,10 +858,22 @@
                     document.getElementById('totalContent').textContent = stats.totalContent;
                     document.getElementById('totalMovies').textContent = stats.totalMovies;
                     document.getElementById('totalSeries').textContent = stats.totalSeries;
-                    document.getElementById('totalFeatured').textContent = stats.featuredContent;
+                    document.getElementById('nowWatching').textContent = Object.keys(watchHistory).length;
                 }
             } catch (error) {
                 console.error('Error loading stats:', error);
+            }
+        }
+        
+        function updateNowWatching() {
+            const watchingCount = Object.keys(watchHistory).length;
+            document.getElementById('nowWatching').textContent = watchingCount;
+            
+            // Show player status if something is being watched
+            if (currentContentId && watchHistory[currentContentId]) {
+                document.getElementById('playerStatus').classList.remove('d-none');
+            } else {
+                document.getElementById('playerStatus').classList.add('d-none');
             }
         }
         
@@ -602,14 +920,35 @@
                     metaText += `${item.totalSeasons} Season${item.totalSeasons > 1 ? 's' : ''}`;
                 }
                 
+                // Check if content has streaming data
+                const hasStream = item.streamUrl || (item.seasons && item.seasons.length > 0);
+                const playableClass = hasStream ? 'playable' : '';
+                const watchProgress = watchHistory[item._id] ? watchHistory[item._id].progress : 0;
+                
                 gridHTML += `
                     <div class="col-6 col-md-4 col-lg-3">
-                        <div class="content-card ${isMovie ? '' : 'series'}" onclick="viewContentDetails('${item._id}')" 
+                        <div class="content-card ${isMovie ? '' : 'series'} ${playableClass}" 
+                             onclick="viewContentDetails('${item._id}')" 
                              style="--card-index: ${index};" role="button" tabindex="0">
                             ${item.isFeatured ? '<span class="featured-badge">FEATURED</span>' : ''}
                             <span class="type-badge ${typeBadge}">${typeText}</span>
+                            
+                            ${hasStream ? `
+                                <div class="play-overlay" onclick="event.stopPropagation(); playContent('${item._id}')">
+                                    <button class="play-btn">
+                                        <i class="bi bi-play-fill"></i>
+                                    </button>
+                                </div>
+                                ${watchProgress > 0 ? `
+                                    <div class="progress-container" style="position: absolute; bottom: 50px; left: 15px; right: 15px; height: 3px;">
+                                        <div class="progress-bar" style="width: ${watchProgress}%"></div>
+                                    </div>
+                                ` : ''}
+                            ` : ''}
+                            
                             <img src="${thumbnail}" class="content-image" alt="${item.title}" 
                                  onerror="this.src='https://via.placeholder.com/300x200/2d3746/8899a6?text=No+Image'">
+                            
                             <div class="card-content">
                                 <div class="content-title">${escapeHtml(item.title)}</div>
                                 <div class="content-meta">${escapeHtml(metaText)}</div>
@@ -637,11 +976,18 @@
                 
                 if (data.success) {
                     const content = data.data;
+                    currentContent = content;
+                    currentContentId = contentId;
+                    
                     const modal = new bootstrap.Modal(document.getElementById('contentModal'));
                     const isMovie = content.type === 'movie';
                     
                     document.getElementById('modalTitle').textContent = content.title;
                     document.getElementById('deleteBtn').setAttribute('data-content-id', contentId);
+                    
+                    // Check if content is playable
+                    const isPlayable = content.streamUrl || (content.seasons && content.seasons.length > 0);
+                    document.getElementById('playModalBtn').style.display = isPlayable ? 'inline-block' : 'none';
                     
                     let detailsHTML = `
                         <div class="row">
@@ -681,6 +1027,17 @@
                                             ${content.imdbRating}/10
                                             <i class="bi bi-star-fill text-warning ms-1"></i>
                                         </div>
+                                    </div>
+                                ` : ''}
+                                
+                                ${isPlayable ? `
+                                    <div class="d-grid gap-2 mt-4">
+                                        <button class="btn btn-primary" onclick="playContent('${contentId}')">
+                                            <i class="bi bi-play-fill me-2"></i> Play Now
+                                        </button>
+                                        <button class="btn btn-outline-primary" onclick="addToPlaylist('${contentId}')">
+                                            <i class="bi bi-plus-circle me-2"></i> Add to Playlist
+                                        </button>
                                     </div>
                                 ` : ''}
                             </div>
@@ -763,15 +1120,18 @@
                                                             ${season.episodes && season.episodes.length > 0 ? `
                                                                 <div class="list-group">
                                                                     ${season.episodes.sort((a, b) => a.episodeNumber - b.episodeNumber).map(episode => `
-                                                                        <div class="episode-item">
+                                                                        <div class="episode-item" onclick="playEpisode('${contentId}', ${season.seasonNumber}, ${episode.episodeNumber})">
                                                                             <div class="d-flex justify-content-between align-items-center">
                                                                                 <div>
                                                                                     <strong>Episode ${episode.episodeNumber}:</strong> 
                                                                                     ${escapeHtml(episode.title)}
                                                                                 </div>
-                                                                                <div>
+                                                                                <div class="d-flex gap-2">
                                                                                     ${episode.duration ? 
                                                                                         `<span class="badge bg-secondary">${episode.duration}</span>` : ''}
+                                                                                    <button class="btn btn-sm btn-outline-light episode-play-btn">
+                                                                                        <i class="bi bi-play-fill"></i>
+                                                                                    </button>
                                                                                 </div>
                                                                             </div>
                                                                             ${episode.description ? `
@@ -790,6 +1150,18 @@
                                         </div>
                                     </div>
                                 ` : ''}
+                                
+                                ${content.streamUrl || (content.seasons && content.seasons.length > 0) ? `
+                                    <div class="mt-4">
+                                        <h6>Streaming Information</h6>
+                                        <div class="alert alert-dark">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            ${content.streamUrl ? 
+                                                'Direct stream available' : 
+                                                'Stream available via episodes'}
+                                        </div>
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                     `;
@@ -802,6 +1174,385 @@
                 showNotification('error', 'Failed to load content details');
             } finally {
                 showLoading(false);
+            }
+        }
+        
+        // Player Functions
+        async function playContent(contentId, seasonNumber = null, episodeNumber = null) {
+            showLoading(true);
+            try {
+                const response = await fetch(`${getApiBaseUrl()}/api/content/${contentId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const content = data.data;
+                    currentContent = content;
+                    currentContentId = contentId;
+                    
+                    let streamUrl = content.streamUrl;
+                    let title = content.title;
+                    
+                    // For series with episodes
+                    if (!streamUrl && content.seasons && content.seasons.length > 0 && seasonNumber && episodeNumber) {
+                        const season = content.seasons.find(s => s.seasonNumber === seasonNumber);
+                        if (season && season.episodes) {
+                            const episode = season.episodes.find(e => e.episodeNumber === episodeNumber);
+                            if (episode && episode.streamUrl) {
+                                streamUrl = episode.streamUrl;
+                                title = `${content.title} - S${seasonNumber}E${episodeNumber}: ${episode.title}`;
+                            }
+                        }
+                    } else if (!streamUrl && content.seasons && content.seasons.length > 0) {
+                        // Play first episode of first season
+                        const firstSeason = content.seasons.sort((a, b) => a.seasonNumber - b.seasonNumber)[0];
+                        if (firstSeason && firstSeason.episodes && firstSeason.episodes.length > 0) {
+                            const firstEpisode = firstSeason.episodes.sort((a, b) => a.episodeNumber - b.episodeNumber)[0];
+                            if (firstEpisode && firstEpisode.streamUrl) {
+                                streamUrl = firstEpisode.streamUrl;
+                                title = `${content.title} - S${firstSeason.seasonNumber}E${firstEpisode.episodeNumber}: ${firstEpisode.title}`;
+                            }
+                        }
+                    }
+                    
+                    if (!streamUrl) {
+                        showNotification('error', 'No stream URL available for this content');
+                        return;
+                    }
+                    
+                    // Check if Android interface is available (WebView)
+                    if (window.Android && window.Android.playChannel) {
+                        const channelData = JSON.stringify({
+                            title: title,
+                            url: streamUrl,
+                            key: content.drmKey || '',
+                            cookie: content.authCookie || '',
+                            type: content.type || 'movie'
+                        });
+                        
+                        window.Android.playChannel(channelData);
+                        showNotification('success', 'Opening in player...');
+                        return;
+                    }
+                    
+                    // Fallback to web player
+                    await setupWebPlayer(streamUrl, title, content);
+                    
+                } else {
+                    throw new Error('Failed to load content');
+                }
+            } catch (error) {
+                console.error('Error playing content:', error);
+                showNotification('error', 'Failed to play content');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function setupWebPlayer(streamUrl, title, content) {
+            // Create or get video element
+            if (!videoElement) {
+                videoElement = document.createElement('video');
+                videoElement.id = 'videoPlayer';
+                videoElement.className = 'w-100 h-100';
+                videoElement.controls = true;
+                videoElement.crossOrigin = 'anonymous';
+                
+                videoElement.addEventListener('play', () => {
+                    isPlaying = true;
+                    updatePlayerControls();
+                });
+                
+                videoElement.addEventListener('pause', () => {
+                    isPlaying = false;
+                    updatePlayerControls();
+                });
+                
+                videoElement.addEventListener('timeupdate', () => {
+                    playerProgress = (videoElement.currentTime / videoElement.duration) * 100 || 0;
+                    updateProgressBar();
+                    saveWatchProgress();
+                });
+                
+                videoElement.addEventListener('ended', () => {
+                    playerNext();
+                });
+            }
+            
+            // Update player container
+            const playerContainer = document.getElementById('playerContainer');
+            playerContainer.innerHTML = '';
+            playerContainer.appendChild(videoElement);
+            
+            // Update UI
+            document.getElementById('playerModalTitle').textContent = title;
+            document.getElementById('playerTitle').textContent = title;
+            document.getElementById('nowPlayingBadge').textContent = 'Playing';
+            
+            // Show player controls
+            document.getElementById('playerControls').classList.add('show');
+            document.getElementById('playerStatus').classList.remove('d-none');
+            
+            // Setup HLS if needed
+            if (Hls.isSupported() && streamUrl.includes('.m3u8')) {
+                if (hls) {
+                    hls.destroy();
+                }
+                
+                hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    backBufferLength: 90
+                });
+                
+                hls.loadSource(streamUrl);
+                hls.attachMedia(videoElement);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    videoElement.play().catch(e => {
+                        console.error('Autoplay failed:', e);
+                        showNotification('info', 'Click play to start video');
+                    });
+                });
+            } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+                // For Safari
+                videoElement.src = streamUrl;
+                videoElement.addEventListener('loadedmetadata', () => {
+                    videoElement.play().catch(e => {
+                        console.error('Autoplay failed:', e);
+                        showNotification('info', 'Click play to start video');
+                    });
+                });
+            } else {
+                // Fallback to direct video
+                videoElement.src = streamUrl;
+                videoElement.load();
+                showNotification('info', 'Click play to start video');
+            }
+            
+            // Show player modal
+            const playerModal = new bootstrap.Modal(document.getElementById('playerModal'));
+            playerModal.show();
+            
+            // Add to playlist if not already
+            if (!playlist.find(item => item.id === currentContentId)) {
+                playlist.push({
+                    id: currentContentId,
+                    title: title,
+                    url: streamUrl,
+                    type: content.type
+                });
+                localStorage.setItem('playlist', JSON.stringify(playlist));
+            }
+            
+            // Update current playlist index
+            currentPlaylistIndex = playlist.findIndex(item => item.id === currentContentId);
+            
+            updatePlayerControls();
+        }
+        
+        function playEpisode(contentId, seasonNumber, episodeNumber) {
+            // Close details modal if open
+            const contentModal = bootstrap.Modal.getInstance(document.getElementById('contentModal'));
+            if (contentModal) {
+                contentModal.hide();
+            }
+            
+            playContent(contentId, seasonNumber, episodeNumber);
+        }
+        
+        function playCurrentContent() {
+            if (currentContentId) {
+                playContent(currentContentId);
+            }
+        }
+        
+        // Player Control Functions
+        function playerPlayPause() {
+            if (videoElement) {
+                if (videoElement.paused) {
+                    videoElement.play();
+                } else {
+                    videoElement.pause();
+                }
+                updatePlayerControls();
+            }
+        }
+        
+        function playerMute() {
+            if (videoElement) {
+                videoElement.muted = !videoElement.muted;
+                updatePlayerControls();
+            }
+        }
+        
+        function playerSeek(event) {
+            if (videoElement) {
+                const rect = event.target.getBoundingClientRect();
+                const offsetX = event.clientX - rect.left;
+                const percentage = offsetX / rect.width;
+                videoElement.currentTime = percentage * videoElement.duration;
+            }
+        }
+        
+        function playerPrevious() {
+            if (playlist.length > 0 && currentPlaylistIndex > 0) {
+                currentPlaylistIndex--;
+                const item = playlist[currentPlaylistIndex];
+                currentContentId = item.id;
+                playContent(item.id);
+            }
+        }
+        
+        function playerNext() {
+            if (playlist.length > 0 && currentPlaylistIndex < playlist.length - 1) {
+                currentPlaylistIndex++;
+                const item = playlist[currentPlaylistIndex];
+                currentContentId = item.id;
+                playContent(item.id);
+            }
+        }
+        
+        function playerClose() {
+            if (videoElement) {
+                videoElement.pause();
+                isPlaying = false;
+            }
+            
+            document.getElementById('playerControls').classList.remove('show');
+            document.getElementById('playerStatus').classList.add('d-none');
+            
+            const playerModal = bootstrap.Modal.getInstance(document.getElementById('playerModal'));
+            if (playerModal) {
+                playerModal.hide();
+            }
+        }
+        
+        function updatePlayerControls() {
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const muteBtn = document.getElementById('muteBtn');
+            
+            if (videoElement) {
+                playPauseBtn.innerHTML = videoElement.paused ? 
+                    '<i class="bi bi-play-fill"></i>' : 
+                    '<i class="bi bi-pause-fill"></i>';
+                
+                muteBtn.innerHTML = videoElement.muted ? 
+                    '<i class="bi bi-volume-mute-fill"></i>' : 
+                    '<i class="bi bi-volume-up-fill"></i>';
+                
+                playPauseBtn.title = videoElement.paused ? 'Play' : 'Pause';
+                muteBtn.title = videoElement.muted ? 'Unmute' : 'Mute';
+            }
+        }
+        
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progressBar');
+            const progressTime = document.getElementById('progressTime');
+            
+            if (videoElement && !isNaN(videoElement.duration)) {
+                const currentTime = formatTime(videoElement.currentTime);
+                const duration = formatTime(videoElement.duration);
+                
+                progressBar.style.width = `${playerProgress}%`;
+                progressTime.textContent = `${currentTime} / ${duration}`;
+                progressTime.style.left = `${playerProgress}%`;
+            }
+        }
+        
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            if (hours > 0) {
+                return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            } else {
+                return `${minutes}:${secs.toString().padStart(2, '0')}`;
+            }
+        }
+        
+        function saveWatchProgress() {
+            if (currentContentId && videoElement && !isNaN(videoElement.duration)) {
+                const progress = (videoElement.currentTime / videoElement.duration) * 100;
+                
+                watchHistory[currentContentId] = {
+                    progress: progress,
+                    lastWatched: Date.now(),
+                    duration: videoElement.duration,
+                    currentTime: videoElement.currentTime
+                };
+                
+                localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
+                updateNowWatching();
+            }
+        }
+        
+        function addToPlaylist(contentId) {
+            const content = allContent.find(item => item._id === contentId);
+            if (content) {
+                const playlistItem = {
+                    id: contentId,
+                    title: content.title,
+                    type: content.type,
+                    thumbnail: content.thumbnail
+                };
+                
+                if (!playlist.find(item => item.id === contentId)) {
+                    playlist.push(playlistItem);
+                    localStorage.setItem('playlist', JSON.stringify(playlist));
+                    showNotification('success', 'Added to playlist');
+                } else {
+                    showNotification('info', 'Already in playlist');
+                }
+            }
+        }
+        
+        function changeQuality(quality) {
+            currentQuality = quality;
+            localStorage.setItem('defaultQuality', quality);
+            
+            if (videoElement && hls) {
+                // HLS quality switching logic here
+                // This would depend on your HLS manifest structure
+                showNotification('info', `Quality changed to ${quality}p`);
+            }
+        }
+        
+        function downloadContent() {
+            if (currentContent && currentContent.downloadUrl) {
+                window.open(currentContent.downloadUrl, '_blank');
+            } else if (videoElement && videoElement.src) {
+                // Fallback to video source
+                const a = document.createElement('a');
+                a.href = videoElement.src;
+                a.download = `${currentContent.title || 'video'}.mp4`;
+                a.click();
+            } else {
+                showNotification('error', 'Download not available');
+            }
+        }
+        
+        function toggleSubtitles() {
+            // Toggle subtitle logic
+            showNotification('info', 'Subtitles toggled');
+        }
+        
+        function toggleFullscreen() {
+            const playerContainer = document.getElementById('playerContainer');
+            if (!document.fullscreenElement) {
+                playerContainer.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        function showPlayer() {
+            if (currentContentId) {
+                const playerModal = new bootstrap.Modal(document.getElementById('playerModal'));
+                playerModal.show();
+            } else {
+                showNotification('info', 'Play something first');
             }
         }
         
@@ -892,9 +1643,17 @@
                     // Close modal
                     bootstrap.Modal.getInstance(document.getElementById('contentModal')).hide();
                     
+                    // Remove from watch history and playlist
+                    delete watchHistory[contentId];
+                    localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
+                    
+                    playlist = playlist.filter(item => item.id !== contentId);
+                    localStorage.setItem('playlist', JSON.stringify(playlist));
+                    
                     // Reload content
                     loadAllContent(currentPage);
                     loadStats();
+                    updateNowWatching();
                 } else {
                     throw new Error(data.message || 'Failed to delete content');
                 }
@@ -945,7 +1704,7 @@
             notification.style.zIndex = '9999';
             
             notification.innerHTML = `
-                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" 
+                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'danger'} border-0" 
                      role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="d-flex">
                         <div class="toast-body">
@@ -974,6 +1733,7 @@
         function showApiConfig() {
             document.getElementById('apiBaseUrl').value = API_BASE_URL;
             document.getElementById('itemsPerPage').value = ITEMS_PER_PAGE;
+            document.getElementById('defaultQuality').value = DEFAULT_QUALITY;
             
             const modal = new bootstrap.Modal(document.getElementById('apiConfigModal'));
             modal.show();
@@ -982,9 +1742,12 @@
         function saveApiConfig() {
             API_BASE_URL = document.getElementById('apiBaseUrl').value;
             ITEMS_PER_PAGE = parseInt(document.getElementById('itemsPerPage').value);
+            DEFAULT_QUALITY = document.getElementById('defaultQuality').value;
+            currentQuality = DEFAULT_QUALITY;
             
             localStorage.setItem('apiBaseUrl', API_BASE_URL);
             localStorage.setItem('itemsPerPage', ITEMS_PER_PAGE);
+            localStorage.setItem('defaultQuality', DEFAULT_QUALITY);
             
             // Close modal
             bootstrap.Modal.getInstance(document.getElementById('apiConfigModal')).hide();
@@ -1018,6 +1781,28 @@
                     document.getElementById('searchInput').value = '';
                     renderContentGrid();
                 }
+                
+                // Player shortcuts
+                if (e.key === ' ' && videoElement) {
+                    e.preventDefault();
+                    playerPlayPause();
+                }
+                if (e.key === 'ArrowLeft' && videoElement) {
+                    e.preventDefault();
+                    videoElement.currentTime = Math.max(0, videoElement.currentTime - 10);
+                }
+                if (e.key === 'ArrowRight' && videoElement) {
+                    e.preventDefault();
+                    videoElement.currentTime = Math.min(videoElement.duration, videoElement.currentTime + 10);
+                }
+                if (e.key === 'm' && videoElement) {
+                    e.preventDefault();
+                    playerMute();
+                }
+                if (e.key === 'f' && videoElement) {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
             });
             
             // Set active filter button
@@ -1033,6 +1818,9 @@
             link.rel = 'preconnect';
             link.href = new URL(API_BASE_URL).origin;
             document.head.appendChild(link);
+            
+            // Load watch history
+            updateNowWatching();
             
             // Initial load
             testConnection().then(connected => {
