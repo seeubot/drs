@@ -3,1833 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎬 Movies & TV Series Manager</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <title>StreamDirect - Movies & TV</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root {
-            --movie-color: #3498db;
-            --series-color: #e74c3c;
-            --featured-color: #f39c12;
-            --background-color: #0f1419;
-            --card-bg: #1c232b;
-            --text-primary: #ffffff;
-            --text-secondary: #8899a6;
-            --player-bg: #000000;
+            --bg-color: #0a0a0a;
+            --card-bg: #141414;
+            --accent-color: #e50914;
+            --text-main: #ffffff;
+            --text-dim: #a3a3a3;
+            --transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-        
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            background-color: var(--background-color);
-            color: var(--text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding-bottom: 100px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            overflow-x: hidden;
+            line-height: 1.5;
         }
-        
-        .navbar {
-            background-color: rgba(28, 35, 43, 0.95);
+
+        /* --- Header & Search --- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            padding: 1.5rem 4%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid #2d3746;
-            padding: 15px 0;
         }
-        
-        .stats-bar {
-            background: linear-gradient(135deg, #1c232b 0%, #2d3746 100%);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px 0;
-            border: 1px solid #2d3746;
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            text-decoration: none;
+            letter-spacing: -1px;
         }
-        
-        .content-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            border: 1px solid #2d3746;
-            margin-bottom: 20px;
-            height: 100%;
+
+        .search-container {
             position: relative;
-            cursor: pointer;
-        }
-        
-        .content-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--movie-color);
-            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.2);
-        }
-        
-        .content-card.series:hover {
-            border-color: var(--series-color);
-            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.2);
-        }
-        
-        .content-image {
             width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background-color: #2d3746;
-            transition: transform 0.3s ease;
+            max-width: 400px;
         }
-        
-        .content-card:hover .content-image {
-            transform: scale(1.05);
-        }
-        
-        .type-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            z-index: 2;
-        }
-        
-        .movie-badge {
-            background-color: var(--movie-color);
-        }
-        
-        .series-badge {
-            background-color: var(--series-color);
-        }
-        
-        .featured-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: var(--featured-color);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            z-index: 2;
-        }
-        
-        .play-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1;
-        }
-        
-        .content-card:hover .play-overlay {
-            opacity: 1;
-        }
-        
-        .play-btn {
-            background: rgba(52, 152, 219, 0.9);
-            border: none;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            transform: scale(0.8);
-        }
-        
-        .content-card:hover .play-btn {
-            transform: scale(1);
-        }
-        
-        .play-btn:hover {
-            background: var(--movie-color);
-            transform: scale(1.1);
-        }
-        
-        .card-content {
-            padding: 15px;
-        }
-        
-        .content-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 5px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .content-meta {
-            color: var(--text-secondary);
-            font-size: 13px;
-            margin-bottom: 10px;
-        }
-        
-        .genre-tag {
-            display: inline-block;
-            background: #2d3746;
-            padding: 3px 8px;
+
+        .search-container input {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
             border-radius: 4px;
-            font-size: 11px;
-            margin-right: 5px;
-            margin-bottom: 5px;
+            color: white;
+            outline: none;
+            transition: var(--transition);
         }
-        
-        .loading-overlay {
-            position: fixed;
-            top: 0;
+
+        .search-container input:focus {
+            background: rgba(255,255,255,0.2);
+            border-color: var(--accent-color);
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+        }
+
+        /* --- Grid Layout --- */
+        .content-container {
+            padding: 0 4% 4rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.5rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            position: relative;
+            background: var(--card-bg);
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition);
+            aspect-ratio: 2/3;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .card-info {
+            position: absolute;
+            bottom: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: rgba(15, 20, 25, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.3s ease;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid transparent;
-            border-top-color: var(--movie-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .search-box {
-            background: var(--card-bg);
-            border: 1px solid #2d3746;
-            border-radius: 25px;
-            padding: 12px 20px;
-            color: var(--text-primary);
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-        
-        .search-box:focus {
-            outline: none;
-            border-color: var(--movie-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-        
-        .filter-btn {
-            background: var(--card-bg);
-            border: 1px solid #2d3746;
-            color: var(--text-secondary);
-            border-radius: 25px;
-            padding: 10px 20px;
-            transition: all 0.3s ease;
-        }
-        
-        .filter-btn:hover, .filter-btn.active {
-            background: var(--movie-color);
-            color: white;
-            border-color: var(--movie-color);
-        }
-        
-        .stats-item {
-            text-align: center;
-            padding: 10px;
-        }
-        
-        .stats-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--movie-color);
-        }
-        
-        .stats-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .modal-content {
-            background: var(--card-bg);
-            color: var(--text-primary);
-            border: 1px solid #2d3746;
-        }
-        
-        .modal-header {
-            border-bottom: 1px solid #2d3746;
-        }
-        
-        .modal-footer {
-            border-top: 1px solid #2d3746;
-        }
-        
-        .episode-item {
-            background: #2d3746;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 8px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .episode-item:hover {
-            background: #3a4556;
-        }
-        
-        .episode-play-btn {
+            padding: 2rem 0.8rem 0.8rem;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
             opacity: 0;
-            transition: opacity 0.2s ease;
+            transition: var(--transition);
         }
-        
-        .episode-item:hover .episode-play-btn {
+
+        .card:hover .card-info {
             opacity: 1;
         }
-        
-        .pagination {
-            margin-top: 30px;
-        }
-        
-        .page-link {
-            background: var(--card-bg);
-            border: 1px solid #2d3746;
-            color: var(--text-primary);
-        }
-        
-        .page-link:hover {
-            background: var(--movie-color);
-            border-color: var(--movie-color);
-            color: white;
-        }
-        
-        .page-item.active .page-link {
-            background: var(--movie-color);
-            border-color: var(--movie-color);
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-secondary);
-        }
-        
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-        
-        /* Player Controls */
-        .player-controls {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(28, 35, 43, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid #2d3746;
-            border-radius: 25px;
-            padding: 10px 20px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .player-controls.show {
-            opacity: 1;
-        }
-        
-        .player-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-primary);
-            font-size: 18px;
-            cursor: pointer;
-            transition: color 0.2s ease;
-            padding: 5px;
-        }
-        
-        .player-btn:hover {
-            color: var(--movie-color);
-        }
-        
-        .player-title {
-            font-size: 14px;
-            margin: 0 10px;
-            max-width: 300px;
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        
-        /* Quality Selector */
-        .quality-badge {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            z-index: 2;
+
+        .card-meta {
+            font-size: 0.75rem;
+            color: var(--text-dim);
         }
-        
-        .quality-selector {
+
+        .badge {
             position: absolute;
-            bottom: 40px;
-            left: 10px;
-            background: rgba(28, 35, 43, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid #2d3746;
-            border-radius: 8px;
-            padding: 10px;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 2px 6px;
+            background: var(--accent-color);
+            font-size: 0.6rem;
+            font-weight: bold;
+            border-radius: 2px;
+        }
+
+        /* --- Fullscreen Player --- */
+        #player-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
             display: none;
             flex-direction: column;
-            gap: 5px;
-            z-index: 3;
         }
-        
-        .quality-selector.show {
+
+        #player-overlay.active {
             display: flex;
         }
-        
-        .quality-option {
-            background: transparent;
-            border: none;
-            color: var(--text-primary);
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: left;
-            font-size: 12px;
-        }
-        
-        .quality-option:hover, .quality-option.active {
-            background: var(--movie-color);
-        }
-        
-        /* Download Button */
-        .download-btn {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            border: none;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+
+        .player-header {
+            padding: 1rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            cursor: pointer;
-            z-index: 2;
-        }
-        
-        /* Progress Bar */
-        .progress-container {
-            position: relative;
-            flex-grow: 1;
-            height: 4px;
-            background: #2d3746;
-            border-radius: 2px;
-            margin: 0 10px;
-            cursor: pointer;
-        }
-        
-        .progress-bar {
+            background: linear-gradient(rgba(0,0,0,0.8), transparent);
             position: absolute;
+            width: 100%;
+            z-index: 1001;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-right: 1rem;
+        }
+
+        video {
+            width: 100%;
             height: 100%;
-            background: var(--movie-color);
-            border-radius: 2px;
-            width: 0%;
+            object-fit: contain;
         }
-        
-        .progress-time {
-            position: absolute;
-            top: -20px;
-            font-size: 11px;
-            color: var(--text-secondary);
+
+        /* --- Utilities --- */
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             display: none;
         }
-        
-        .progress-container:hover .progress-time {
-            display: block;
+
+        .loader.active { display: block; }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.8rem; }
+            header { flex-direction: column; gap: 1rem; }
+            .search-container { max-width: 100%; }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner"></div>
+
+    <header>
+        <a href="#" class="brand">STREAMDIRECT</a>
+        <div class="search-container">
+            <i class="bi bi-search"></i>
+            <input type="text" id="search-input" placeholder="Search title, genre, year...">
+        </div>
+    </header>
+
+    <main class="content-container">
+        <div id="content-grid" class="grid">
+            <!-- Dynamic Content -->
+        </div>
+    </main>
+
+    <div id="player-overlay">
+        <div class="player-header">
+            <button class="back-btn" onclick="closePlayer()"><i class="bi bi-arrow-left"></i></button>
+            <span id="playing-title">Loading...</span>
+        </div>
+        <video id="main-video" controls autoplay crossorigin="anonymous"></video>
     </div>
 
-    <!-- Player Controls (Fixed at Bottom) -->
-    <div class="player-controls" id="playerControls">
-        <button class="player-btn" onclick="playerPrevious()" title="Previous">
-            <i class="bi bi-skip-backward-fill"></i>
-        </button>
-        <button class="player-btn" onclick="playerPlayPause()" id="playPauseBtn" title="Play/Pause">
-            <i class="bi bi-play-fill"></i>
-        </button>
-        <button class="player-btn" onclick="playerNext()" title="Next">
-            <i class="bi bi-skip-forward-fill"></i>
-        </button>
-        <div class="player-title" id="playerTitle">Not Playing</div>
-        <div class="progress-container" onclick="playerSeek(event)">
-            <div class="progress-bar" id="progressBar"></div>
-            <div class="progress-time" id="progressTime">0:00 / 0:00</div>
-        </div>
-        <button class="player-btn" onclick="playerMute()" id="muteBtn" title="Mute">
-            <i class="bi bi-volume-up-fill"></i>
-        </button>
-        <button class="player-btn" onclick="playerClose()" title="Close Player">
-            <i class="bi bi-x-lg"></i>
-        </button>
-    </div>
-
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container">
-            <a class="navbar-brand" href="#" style="color: var(--text-primary); font-weight: 700; font-size: 1.5rem;">
-                🎬 Movies & TV Manager
-            </a>
-            <div class="d-flex align-items-center">
-                <div id="connectionStatus" class="me-3">
-                    <span class="badge bg-secondary">Connecting...</span>
-                </div>
-                <div id="playerStatus" class="me-3 d-none">
-                    <span class="badge bg-success" id="nowPlayingBadge">Playing</span>
-                </div>
-                <button class="btn btn-outline-light btn-sm" onclick="showApiConfig()">
-                    <i class="bi bi-gear"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Search and Filter Section -->
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <div class="input-group">
-                    <span class="input-group-text bg-dark border-dark">
-                        <i class="bi bi-search text-muted"></i>
-                    </span>
-                    <input type="text" id="searchInput" class="search-box" placeholder="Search movies, series, actors..." 
-                           autocomplete="off" spellcheck="false">
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="d-flex gap-2">
-                    <button class="filter-btn flex-grow-1" onclick="setFilter('all')" id="filterAll">
-                        <i class="bi bi-collection me-1"></i> All
-                    </button>
-                    <button class="filter-btn" onclick="setFilter('movie')" id="filterMovies">
-                        <i class="bi bi-film me-1"></i>
-                    </button>
-                    <button class="filter-btn" onclick="setFilter('series')" id="filterSeries">
-                        <i class="bi bi-tv me-1"></i>
-                    </button>
-                    <button class="filter-btn" onclick="showPlayer()" id="showPlayerBtn" title="Show Player">
-                        <i class="bi bi-play-circle me-1"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats Overview -->
-        <div class="stats-bar" id="statsSection">
-            <div class="row text-center" id="statsContent">
-                <div class="col-6 col-md-3">
-                    <div class="stats-number" id="totalContent">0</div>
-                    <div class="stats-label">Total Content</div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stats-number" id="totalMovies">0</div>
-                    <div class="stats-label">Movies</div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stats-number" id="totalSeries">0</div>
-                    <div class="stats-label">TV Series</div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stats-number" id="nowWatching">0</div>
-                    <div class="stats-label">Now Watching</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- API Configuration Modal -->
-        <div class="modal fade" id="apiConfigModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">API Configuration</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">API Base URL</label>
-                            <input type="url" id="apiBaseUrl" class="form-control bg-dark border-dark text-light" 
-                                   value="http://localhost:3000" placeholder="Enter API base URL">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Items per page</label>
-                            <input type="number" id="itemsPerPage" class="form-control bg-dark border-dark text-light" 
-                                   value="12" min="1" max="100">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Default Quality</label>
-                            <select id="defaultQuality" class="form-control bg-dark border-dark text-light">
-                                <option value="1080">1080p</option>
-                                <option value="720" selected>720p</option>
-                                <option value="480">480p</option>
-                                <option value="360">360p</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" onclick="saveApiConfig()">Save & Reload</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Content Grid -->
-        <div id="contentGrid" class="row">
-            <!-- Content will be loaded here -->
-        </div>
-
-        <!-- Pagination -->
-        <nav id="paginationContainer" class="d-none">
-            <ul class="pagination justify-content-center" id="pagination">
-                <!-- Pagination will be generated here -->
-            </ul>
-        </nav>
-
-        <!-- Empty State -->
-        <div id="emptyState" class="empty-state d-none">
-            <i class="bi bi-film"></i>
-            <h4>No content found</h4>
-            <p>Try adjusting your search or filters</p>
-            <button class="btn btn-outline-primary mt-3" onclick="loadAllContent()">
-                <i class="bi bi-arrow-clockwise"></i> Reload Content
-            </button>
-        </div>
-
-        <!-- Content Details Modal -->
-        <div class="modal fade" id="contentModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalTitle"></h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body" id="modalBody">
-                        <!-- Content details will be loaded here -->
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" onclick="playCurrentContent()" id="playModalBtn">
-                            <i class="bi bi-play-fill"></i> Play
-                        </button>
-                        <button type="button" class="btn btn-danger" id="deleteBtn" onclick="deleteContent()">
-                            <i class="bi bi-trash"></i> Delete
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Player Modal -->
-        <div class="modal fade" id="playerModal" tabindex="-1">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content" style="background: #000;">
-                    <div class="modal-header border-dark">
-                        <h5 class="modal-title" id="playerModalTitle">Player</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body p-0">
-                        <div id="playerContainer" style="width: 100%; height: 500px; background: #000;">
-                            <!-- Player will be embedded here -->
-                        </div>
-                    </div>
-                    <div class="modal-footer border-dark">
-                        <div class="d-flex justify-content-between w-100">
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-outline-light" onclick="changeQuality('1080')">1080p</button>
-                                <button class="btn btn-sm btn-outline-light" onclick="changeQuality('720')">720p</button>
-                                <button class="btn btn-sm btn-outline-light" onclick="changeQuality('480')">480p</button>
-                                <button class="btn btn-sm btn-outline-light" onclick="changeQuality('360')">360p</button>
-                            </div>
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-outline-light" onclick="downloadContent()">
-                                    <i class="bi bi-download"></i> Download
-                                </button>
-                                <button class="btn btn-sm btn-outline-light" onclick="toggleSubtitles()">
-                                    <i class="bi bi-subtitles"></i> CC
-                                </button>
-                                <button class="btn btn-sm btn-outline-light" onclick="toggleFullscreen()">
-                                    <i class="bi bi-arrows-fullscreen"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div id="loader" class="loader">
+        <div class="spinner-border text-danger" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.10/dist/hls.min.js"></script>
-    
     <script>
-        // Configuration
-        let API_BASE_URL = localStorage.getItem('apiBaseUrl') || 'https://static-crane-seeutech-17dd4df3.koyeb.app';
-        let ITEMS_PER_PAGE = parseInt(localStorage.getItem('itemsPerPage')) || 12;
-        let DEFAULT_QUALITY = localStorage.getItem('defaultQuality') || '720';
-        let currentPage = 1;
-        let totalPages = 1;
-        let currentFilter = 'all';
-        let allContent = [];
-        let filteredContent = [];
-        let isLoading = false;
-        let isInitialLoad = true;
-        
-        // Player State
-        let currentPlayer = null;
-        let currentContentId = null;
-        let currentContent = null;
-        let currentQuality = DEFAULT_QUALITY;
-        let isPlaying = false;
-        let playerProgress = 0;
-        let watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || {};
-        let playlist = JSON.parse(localStorage.getItem('playlist')) || [];
-        let currentPlaylistIndex = -1;
-        
-        // HLS Player Instance
+        const API_URL = 'https://static-crane-seeutech-17dd4df3.koyeb.app/api/content';
+        let allData = [];
+        const grid = document.getElementById('content-grid');
+        const searchInput = document.getElementById('search-input');
+        const playerOverlay = document.getElementById('player-overlay');
+        const video = document.getElementById('main-video');
+        const playingTitle = document.getElementById('playing-title');
         let hls = null;
-        let videoElement = null;
-        
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            init();
-        });
-        
-        // API Configuration Functions
-        function getApiBaseUrl() {
-            return API_BASE_URL.replace(/\/$/, '');
-        }
-        
-        async function testConnection() {
-            showLoading(true);
+
+        // Initialize
+        async function init() {
+            showLoader(true);
             try {
-                const response = await fetch(`${getApiBaseUrl()}/health`);
-                if (response.ok) {
-                    const data = await response.json();
-                    updateConnectionStatus('connected', 'API Connected');
-                    showNotification('success', '✅ Connected to API successfully');
-                    return true;
-                } else {
-                    throw new Error('API returned ' + response.status);
+                // Fetch high limit for one-time efficient load
+                const res = await fetch(`${API_URL}?limit=100`);
+                const json = await res.json();
+                if(json.success) {
+                    allData = json.data;
+                    render(allData);
                 }
-            } catch (error) {
-                console.error('Connection error:', error);
-                updateConnectionStatus('disconnected', 'API Unavailable');
-                showNotification('error', '❌ Failed to connect to API. Using cached data if available.');
-                return false;
+            } catch (err) {
+                console.error("Failed to load content", err);
             } finally {
-                showLoading(false);
+                showLoader(false);
             }
         }
-        
-        // Main Content Loading Functions
-        async function loadAllContent(page = 1) {
-            if (isLoading) return;
-            
-            isLoading = true;
-            showLoading(true);
-            
-            try {
-                console.time('Content Load Time');
-                
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-                
-                // Build query parameters
-                const params = new URLSearchParams({
-                    page: page,
-                    limit: ITEMS_PER_PAGE
-                });
-                
-                if (currentFilter !== 'all') {
-                    params.append('type', currentFilter);
-                }
-                
-                const response = await fetch(`${getApiBaseUrl()}/api/content?${params}`, {
-                    signal: controller.signal,
-                    headers: {
-                        'Accept': 'application/json',
-                        'Cache-Control': 'max-age=300'
-                    }
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const data = await response.json();
-                console.timeEnd('Content Load Time');
-                
-                if (data.success) {
-                    allContent = data.data;
-                    filteredContent = [...allContent];
-                    
-                    // Cache the data
-                    localStorage.setItem('cachedContent', JSON.stringify({
-                        data: allContent,
-                        timestamp: Date.now()
-                    }));
-                    
-                    renderContentGrid();
-                    updatePagination(data.total, data.page, data.totalPages);
-                    
-                    if (isInitialLoad) {
-                        loadStats();
-                        isInitialLoad = false;
-                    }
-                    
-                    // Update now watching count
-                    updateNowWatching();
-                    
-                    return true;
-                } else {
-                    throw new Error(data.message || 'Invalid response format');
-                }
-            } catch (error) {
-                console.warn('API failed, trying cache...', error);
-                
-                // Try to load from cache
-                const cached = localStorage.getItem('cachedContent');
-                if (cached) {
-                    const { data, timestamp } = JSON.parse(cached);
-                    // Use cache if less than 1 hour old
-                    if (Date.now() - timestamp < 3600000) {
-                        allContent = data;
-                        filteredContent = [...allContent];
-                        renderContentGrid();
-                        showNotification('warning', '⚠️ Using cached data (offline mode)');
-                        updateNowWatching();
-                        return true;
-                    }
-                }
-                
-                showNotification('error', '❌ Unable to load content. Please check your connection.');
-                document.getElementById('emptyState').classList.remove('d-none');
-                return false;
-            } finally {
-                isLoading = false;
-                showLoading(false);
-            }
-        }
-        
-        async function loadStats() {
-            try {
-                const response = await fetch(`${getApiBaseUrl()}/api/stats`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    const stats = data.data;
-                    document.getElementById('totalContent').textContent = stats.totalContent;
-                    document.getElementById('totalMovies').textContent = stats.totalMovies;
-                    document.getElementById('totalSeries').textContent = stats.totalSeries;
-                    document.getElementById('nowWatching').textContent = Object.keys(watchHistory).length;
-                }
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
-        }
-        
-        function updateNowWatching() {
-            const watchingCount = Object.keys(watchHistory).length;
-            document.getElementById('nowWatching').textContent = watchingCount;
-            
-            // Show player status if something is being watched
-            if (currentContentId && watchHistory[currentContentId]) {
-                document.getElementById('playerStatus').classList.remove('d-none');
-            } else {
-                document.getElementById('playerStatus').classList.add('d-none');
-            }
-        }
-        
-        // Content Rendering Functions
-        function renderContentGrid() {
-            const grid = document.getElementById('contentGrid');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-            
-            // Apply search filter
-            let contentToRender = filteredContent;
-            if (searchTerm.length >= 2) {
-                contentToRender = filteredContent.filter(item => {
-                    const matchesSearch = item.title.toLowerCase().includes(searchTerm) ||
-                                         (item.description && item.description.toLowerCase().includes(searchTerm)) ||
-                                         (item.cast && item.cast.some(actor => actor.toLowerCase().includes(searchTerm)));
-                    return matchesSearch;
-                });
-            }
-            
-            if (contentToRender.length === 0) {
-                grid.innerHTML = '';
-                document.getElementById('emptyState').classList.remove('d-none');
-                document.getElementById('paginationContainer').classList.add('d-none');
-                return;
-            }
-            
-            document.getElementById('emptyState').classList.add('d-none');
-            document.getElementById('paginationContainer').classList.remove('d-none');
-            
-            // Create grid items
-            let gridHTML = '';
-            contentToRender.forEach((item, index) => {
-                const isMovie = item.type === 'movie';
-                const typeBadge = isMovie ? 'movie-badge' : 'series-badge';
-                const typeText = isMovie ? 'MOVIE' : 'SERIES';
-                
-                const thumbnail = item.thumbnail || 'https://via.placeholder.com/300x200/2d3746/8899a6?text=No+Image';
-                
-                let metaText = '';
-                if (item.year) metaText += `${item.year} • `;
-                if (isMovie && item.duration) {
-                    metaText += item.duration;
-                } else if (!isMovie && item.totalSeasons) {
-                    metaText += `${item.totalSeasons} Season${item.totalSeasons > 1 ? 's' : ''}`;
-                }
-                
-                // Check if content has streaming data
-                const hasStream = item.streamUrl || (item.seasons && item.seasons.length > 0);
-                const playableClass = hasStream ? 'playable' : '';
-                const watchProgress = watchHistory[item._id] ? watchHistory[item._id].progress : 0;
-                
-                gridHTML += `
-                    <div class="col-6 col-md-4 col-lg-3">
-                        <div class="content-card ${isMovie ? '' : 'series'} ${playableClass}" 
-                             onclick="viewContentDetails('${item._id}')" 
-                             style="--card-index: ${index};" role="button" tabindex="0">
-                            ${item.isFeatured ? '<span class="featured-badge">FEATURED</span>' : ''}
-                            <span class="type-badge ${typeBadge}">${typeText}</span>
-                            
-                            ${hasStream ? `
-                                <div class="play-overlay" onclick="event.stopPropagation(); playContent('${item._id}')">
-                                    <button class="play-btn">
-                                        <i class="bi bi-play-fill"></i>
-                                    </button>
-                                </div>
-                                ${watchProgress > 0 ? `
-                                    <div class="progress-container" style="position: absolute; bottom: 50px; left: 15px; right: 15px; height: 3px;">
-                                        <div class="progress-bar" style="width: ${watchProgress}%"></div>
-                                    </div>
-                                ` : ''}
-                            ` : ''}
-                            
-                            <img src="${thumbnail}" class="content-image" alt="${item.title}" 
-                                 onerror="this.src='https://via.placeholder.com/300x200/2d3746/8899a6?text=No+Image'">
-                            
-                            <div class="card-content">
-                                <div class="content-title">${escapeHtml(item.title)}</div>
-                                <div class="content-meta">${escapeHtml(metaText)}</div>
-                                <div class="mt-2">
-                                    ${(item.genre || []).slice(0, 2).map(genre => 
-                                        `<span class="genre-tag">${escapeHtml(genre)}</span>`
-                                    ).join('')}
-                                    ${(item.genre || []).length > 2 ? 
-                                        `<span class="genre-tag">+${(item.genre || []).length - 2} more</span>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            grid.innerHTML = gridHTML;
-        }
-        
-        async function viewContentDetails(contentId) {
-            showLoading(true);
-            try {
-                const response = await fetch(`${getApiBaseUrl()}/api/content/${contentId}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    const content = data.data;
-                    currentContent = content;
-                    currentContentId = contentId;
-                    
-                    const modal = new bootstrap.Modal(document.getElementById('contentModal'));
-                    const isMovie = content.type === 'movie';
-                    
-                    document.getElementById('modalTitle').textContent = content.title;
-                    document.getElementById('deleteBtn').setAttribute('data-content-id', contentId);
-                    
-                    // Check if content is playable
-                    const isPlayable = content.streamUrl || (content.seasons && content.seasons.length > 0);
-                    document.getElementById('playModalBtn').style.display = isPlayable ? 'inline-block' : 'none';
-                    
-                    let detailsHTML = `
-                        <div class="row">
-                            <div class="col-md-4">
-                                ${content.thumbnail ? 
-                                    `<img src="${content.thumbnail}" class="img-fluid rounded mb-3" alt="${content.title}" 
-                                          style="width: 100%; height: 200px; object-fit: cover;">` : 
-                                    `<div class="bg-secondary rounded mb-3 d-flex align-items-center justify-content-center" 
-                                          style="height: 200px;">
-                                        <i class="bi bi-film" style="font-size: 48px; opacity: 0.3;"></i>
-                                    </div>`}
-                                
-                                <div class="mb-3">
-                                    <small class="text-muted d-block">TYPE</small>
-                                    <span class="badge ${isMovie ? 'bg-primary' : 'bg-danger'}">
-                                        ${isMovie ? 'Movie' : 'TV Series'}
-                                    </span>
-                                    ${content.isFeatured ? '<span class="badge bg-warning ms-1">Featured</span>' : ''}
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <small class="text-muted d-block">YEAR</small>
-                                    <div>${content.year || 'N/A'}</div>
-                                </div>
-                                
-                                ${content.rating ? `
-                                    <div class="mb-3">
-                                        <small class="text-muted d-block">RATING</small>
-                                        <div>${content.rating}</div>
-                                    </div>
-                                ` : ''}
-                                
-                                ${content.imdbRating ? `
-                                    <div class="mb-3">
-                                        <small class="text-muted d-block">IMDB RATING</small>
-                                        <div>
-                                            ${content.imdbRating}/10
-                                            <i class="bi bi-star-fill text-warning ms-1"></i>
-                                        </div>
-                                    </div>
-                                ` : ''}
-                                
-                                ${isPlayable ? `
-                                    <div class="d-grid gap-2 mt-4">
-                                        <button class="btn btn-primary" onclick="playContent('${contentId}')">
-                                            <i class="bi bi-play-fill me-2"></i> Play Now
-                                        </button>
-                                        <button class="btn btn-outline-primary" onclick="addToPlaylist('${contentId}')">
-                                            <i class="bi bi-plus-circle me-2"></i> Add to Playlist
-                                        </button>
-                                    </div>
-                                ` : ''}
-                            </div>
-                            
-                            <div class="col-md-8">
-                                <div class="mb-4">
-                                    <h6>Description</h6>
-                                    <p class="mb-0">${escapeHtml(content.description || 'No description available.')}</p>
-                                </div>
-                                
-                                ${isMovie ? `
-                                    <div class="row mb-3">
-                                        <div class="col-6">
-                                            <small class="text-muted d-block">DURATION</small>
-                                            <div>${content.duration || 'N/A'}</div>
-                                        </div>
-                                        <div class="col-6">
-                                            <small class="text-muted d-block">LANGUAGE</small>
-                                            <div>${content.language || 'N/A'}</div>
-                                        </div>
-                                    </div>
-                                ` : ''}
-                                
-                                ${!isMovie && content.totalSeasons ? `
-                                    <div class="mb-3">
-                                        <small class="text-muted d-block">SEASONS & EPISODES</small>
-                                        <div>${content.totalSeasons} Seasons • ${content.totalEpisodes} Episodes</div>
-                                    </div>
-                                ` : ''}
-                                
-                                ${content.director ? `
-                                    <div class="mb-3">
-                                        <small class="text-muted d-block">DIRECTOR</small>
-                                        <div>${escapeHtml(content.director)}</div>
-                                    </div>
-                                ` : ''}
-                                
-                                ${content.cast && content.cast.length > 0 ? `
-                                    <div class="mb-3">
-                                        <small class="text-muted d-block">CAST</small>
-                                        <div class="d-flex flex-wrap gap-2">
-                                            ${content.cast.map(actor => 
-                                                `<span class="badge bg-secondary">${escapeHtml(actor)}</span>`
-                                            ).join('')}
-                                        </div>
-                                    </div>
-                                ` : ''}
-                                
-                                ${content.genre && content.genre.length > 0 ? `
-                                    <div class="mb-3">
-                                        <small class="text-muted d-block">GENRES</small>
-                                        <div class="d-flex flex-wrap gap-2">
-                                            ${content.genre.map(genre => 
-                                                `<span class="badge bg-info">${escapeHtml(genre)}</span>`
-                                            ).join('')}
-                                        </div>
-                                    </div>
-                                ` : ''}
-                                
-                                ${!isMovie && content.seasons && content.seasons.length > 0 ? `
-                                    <div class="mb-3">
-                                        <small class="text-muted d-block">SEASONS</small>
-                                        <div class="accordion" id="seasonsAccordion">
-                                            ${content.seasons.sort((a, b) => a.seasonNumber - b.seasonNumber).map((season, idx) => `
-                                                <div class="accordion-item border-dark">
-                                                    <h2 class="accordion-header">
-                                                        <button class="accordion-button bg-dark text-white ${idx > 0 ? 'collapsed' : ''}" 
-                                                                type="button" data-bs-toggle="collapse" 
-                                                                data-bs-target="#season${idx}">
-                                                            Season ${season.seasonNumber}: ${escapeHtml(season.title || 'Untitled')}
-                                                            <span class="badge bg-secondary ms-2">${season.episodeCount || 0} episodes</span>
-                                                        </button>
-                                                    </h2>
-                                                    <div id="season${idx}" class="accordion-collapse collapse ${idx === 0 ? 'show' : ''}" 
-                                                         data-bs-parent="#seasonsAccordion">
-                                                        <div class="accordion-body bg-dark">
-                                                            ${season.description ? `
-                                                                <p class="mb-3">${escapeHtml(season.description)}</p>
-                                                            ` : ''}
-                                                            ${season.episodes && season.episodes.length > 0 ? `
-                                                                <div class="list-group">
-                                                                    ${season.episodes.sort((a, b) => a.episodeNumber - b.episodeNumber).map(episode => `
-                                                                        <div class="episode-item" onclick="playEpisode('${contentId}', ${season.seasonNumber}, ${episode.episodeNumber})">
-                                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                                <div>
-                                                                                    <strong>Episode ${episode.episodeNumber}:</strong> 
-                                                                                    ${escapeHtml(episode.title)}
-                                                                                </div>
-                                                                                <div class="d-flex gap-2">
-                                                                                    ${episode.duration ? 
-                                                                                        `<span class="badge bg-secondary">${episode.duration}</span>` : ''}
-                                                                                    <button class="btn btn-sm btn-outline-light episode-play-btn">
-                                                                                        <i class="bi bi-play-fill"></i>
-                                                                                    </button>
-                                                                                </div>
-                                                                            </div>
-                                                                            ${episode.description ? `
-                                                                                <div class="text-muted mt-1" style="font-size: 12px;">
-                                                                                    ${escapeHtml(episode.description)}
-                                                                                </div>
-                                                                            ` : ''}
-                                                                        </div>
-                                                                    `).join('')}
-                                                                </div>
-                                                            ` : '<p class="text-muted">No episodes added yet.</p>'}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                    </div>
-                                ` : ''}
-                                
-                                ${content.streamUrl || (content.seasons && content.seasons.length > 0) ? `
-                                    <div class="mt-4">
-                                        <h6>Streaming Information</h6>
-                                        <div class="alert alert-dark">
-                                            <i class="bi bi-info-circle me-2"></i>
-                                            ${content.streamUrl ? 
-                                                'Direct stream available' : 
-                                                'Stream available via episodes'}
-                                        </div>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `;
-                    
-                    document.getElementById('modalBody').innerHTML = detailsHTML;
-                    modal.show();
-                }
-            } catch (error) {
-                console.error('Error loading content details:', error);
-                showNotification('error', 'Failed to load content details');
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        // Player Functions
-        async function playContent(contentId, seasonNumber = null, episodeNumber = null) {
-            showLoading(true);
-            try {
-                const response = await fetch(`${getApiBaseUrl()}/api/content/${contentId}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    const content = data.data;
-                    currentContent = content;
-                    currentContentId = contentId;
-                    
-                    let streamUrl = content.streamUrl;
-                    let title = content.title;
-                    
-                    // For series with episodes
-                    if (!streamUrl && content.seasons && content.seasons.length > 0 && seasonNumber && episodeNumber) {
-                        const season = content.seasons.find(s => s.seasonNumber === seasonNumber);
-                        if (season && season.episodes) {
-                            const episode = season.episodes.find(e => e.episodeNumber === episodeNumber);
-                            if (episode && episode.streamUrl) {
-                                streamUrl = episode.streamUrl;
-                                title = `${content.title} - S${seasonNumber}E${episodeNumber}: ${episode.title}`;
-                            }
-                        }
-                    } else if (!streamUrl && content.seasons && content.seasons.length > 0) {
-                        // Play first episode of first season
-                        const firstSeason = content.seasons.sort((a, b) => a.seasonNumber - b.seasonNumber)[0];
-                        if (firstSeason && firstSeason.episodes && firstSeason.episodes.length > 0) {
-                            const firstEpisode = firstSeason.episodes.sort((a, b) => a.episodeNumber - b.episodeNumber)[0];
-                            if (firstEpisode && firstEpisode.streamUrl) {
-                                streamUrl = firstEpisode.streamUrl;
-                                title = `${content.title} - S${firstSeason.seasonNumber}E${firstEpisode.episodeNumber}: ${firstEpisode.title}`;
-                            }
-                        }
-                    }
-                    
-                    if (!streamUrl) {
-                        showNotification('error', 'No stream URL available for this content');
-                        return;
-                    }
-                    
-                    // Check if Android interface is available (WebView)
-                    if (window.Android && window.Android.playChannel) {
-                        const channelData = JSON.stringify({
-                            title: title,
-                            url: streamUrl,
-                            key: content.drmKey || '',
-                            cookie: content.authCookie || '',
-                            type: content.type || 'movie'
-                        });
-                        
-                        window.Android.playChannel(channelData);
-                        showNotification('success', 'Opening in player...');
-                        return;
-                    }
-                    
-                    // Fallback to web player
-                    await setupWebPlayer(streamUrl, title, content);
-                    
-                } else {
-                    throw new Error('Failed to load content');
-                }
-            } catch (error) {
-                console.error('Error playing content:', error);
-                showNotification('error', 'Failed to play content');
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        async function setupWebPlayer(streamUrl, title, content) {
-            // Create or get video element
-            if (!videoElement) {
-                videoElement = document.createElement('video');
-                videoElement.id = 'videoPlayer';
-                videoElement.className = 'w-100 h-100';
-                videoElement.controls = true;
-                videoElement.crossOrigin = 'anonymous';
-                
-                videoElement.addEventListener('play', () => {
-                    isPlaying = true;
-                    updatePlayerControls();
-                });
-                
-                videoElement.addEventListener('pause', () => {
-                    isPlaying = false;
-                    updatePlayerControls();
-                });
-                
-                videoElement.addEventListener('timeupdate', () => {
-                    playerProgress = (videoElement.currentTime / videoElement.duration) * 100 || 0;
-                    updateProgressBar();
-                    saveWatchProgress();
-                });
-                
-                videoElement.addEventListener('ended', () => {
-                    playerNext();
-                });
-            }
-            
-            // Update player container
-            const playerContainer = document.getElementById('playerContainer');
-            playerContainer.innerHTML = '';
-            playerContainer.appendChild(videoElement);
-            
-            // Update UI
-            document.getElementById('playerModalTitle').textContent = title;
-            document.getElementById('playerTitle').textContent = title;
-            document.getElementById('nowPlayingBadge').textContent = 'Playing';
-            
-            // Show player controls
-            document.getElementById('playerControls').classList.add('show');
-            document.getElementById('playerStatus').classList.remove('d-none');
-            
-            // Setup HLS if needed
-            if (Hls.isSupported() && streamUrl.includes('.m3u8')) {
-                if (hls) {
-                    hls.destroy();
-                }
-                
-                hls = new Hls({
-                    enableWorker: true,
-                    lowLatencyMode: true,
-                    backBufferLength: 90
-                });
-                
-                hls.loadSource(streamUrl);
-                hls.attachMedia(videoElement);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    videoElement.play().catch(e => {
-                        console.error('Autoplay failed:', e);
-                        showNotification('info', 'Click play to start video');
-                    });
-                });
-            } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-                // For Safari
-                videoElement.src = streamUrl;
-                videoElement.addEventListener('loadedmetadata', () => {
-                    videoElement.play().catch(e => {
-                        console.error('Autoplay failed:', e);
-                        showNotification('info', 'Click play to start video');
-                    });
-                });
-            } else {
-                // Fallback to direct video
-                videoElement.src = streamUrl;
-                videoElement.load();
-                showNotification('info', 'Click play to start video');
-            }
-            
-            // Show player modal
-            const playerModal = new bootstrap.Modal(document.getElementById('playerModal'));
-            playerModal.show();
-            
-            // Add to playlist if not already
-            if (!playlist.find(item => item.id === currentContentId)) {
-                playlist.push({
-                    id: currentContentId,
-                    title: title,
-                    url: streamUrl,
-                    type: content.type
-                });
-                localStorage.setItem('playlist', JSON.stringify(playlist));
-            }
-            
-            // Update current playlist index
-            currentPlaylistIndex = playlist.findIndex(item => item.id === currentContentId);
-            
-            updatePlayerControls();
-        }
-        
-        function playEpisode(contentId, seasonNumber, episodeNumber) {
-            // Close details modal if open
-            const contentModal = bootstrap.Modal.getInstance(document.getElementById('contentModal'));
-            if (contentModal) {
-                contentModal.hide();
-            }
-            
-            playContent(contentId, seasonNumber, episodeNumber);
-        }
-        
-        function playCurrentContent() {
-            if (currentContentId) {
-                playContent(currentContentId);
-            }
-        }
-        
-        // Player Control Functions
-        function playerPlayPause() {
-            if (videoElement) {
-                if (videoElement.paused) {
-                    videoElement.play();
-                } else {
-                    videoElement.pause();
-                }
-                updatePlayerControls();
-            }
-        }
-        
-        function playerMute() {
-            if (videoElement) {
-                videoElement.muted = !videoElement.muted;
-                updatePlayerControls();
-            }
-        }
-        
-        function playerSeek(event) {
-            if (videoElement) {
-                const rect = event.target.getBoundingClientRect();
-                const offsetX = event.clientX - rect.left;
-                const percentage = offsetX / rect.width;
-                videoElement.currentTime = percentage * videoElement.duration;
-            }
-        }
-        
-        function playerPrevious() {
-            if (playlist.length > 0 && currentPlaylistIndex > 0) {
-                currentPlaylistIndex--;
-                const item = playlist[currentPlaylistIndex];
-                currentContentId = item.id;
-                playContent(item.id);
-            }
-        }
-        
-        function playerNext() {
-            if (playlist.length > 0 && currentPlaylistIndex < playlist.length - 1) {
-                currentPlaylistIndex++;
-                const item = playlist[currentPlaylistIndex];
-                currentContentId = item.id;
-                playContent(item.id);
-            }
-        }
-        
-        function playerClose() {
-            if (videoElement) {
-                videoElement.pause();
-                isPlaying = false;
-            }
-            
-            document.getElementById('playerControls').classList.remove('show');
-            document.getElementById('playerStatus').classList.add('d-none');
-            
-            const playerModal = bootstrap.Modal.getInstance(document.getElementById('playerModal'));
-            if (playerModal) {
-                playerModal.hide();
-            }
-        }
-        
-        function updatePlayerControls() {
-            const playPauseBtn = document.getElementById('playPauseBtn');
-            const muteBtn = document.getElementById('muteBtn');
-            
-            if (videoElement) {
-                playPauseBtn.innerHTML = videoElement.paused ? 
-                    '<i class="bi bi-play-fill"></i>' : 
-                    '<i class="bi bi-pause-fill"></i>';
-                
-                muteBtn.innerHTML = videoElement.muted ? 
-                    '<i class="bi bi-volume-mute-fill"></i>' : 
-                    '<i class="bi bi-volume-up-fill"></i>';
-                
-                playPauseBtn.title = videoElement.paused ? 'Play' : 'Pause';
-                muteBtn.title = videoElement.muted ? 'Unmute' : 'Mute';
-            }
-        }
-        
-        function updateProgressBar() {
-            const progressBar = document.getElementById('progressBar');
-            const progressTime = document.getElementById('progressTime');
-            
-            if (videoElement && !isNaN(videoElement.duration)) {
-                const currentTime = formatTime(videoElement.currentTime);
-                const duration = formatTime(videoElement.duration);
-                
-                progressBar.style.width = `${playerProgress}%`;
-                progressTime.textContent = `${currentTime} / ${duration}`;
-                progressTime.style.left = `${playerProgress}%`;
-            }
-        }
-        
-        function formatTime(seconds) {
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const secs = Math.floor(seconds % 60);
-            
-            if (hours > 0) {
-                return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            } else {
-                return `${minutes}:${secs.toString().padStart(2, '0')}`;
-            }
-        }
-        
-        function saveWatchProgress() {
-            if (currentContentId && videoElement && !isNaN(videoElement.duration)) {
-                const progress = (videoElement.currentTime / videoElement.duration) * 100;
-                
-                watchHistory[currentContentId] = {
-                    progress: progress,
-                    lastWatched: Date.now(),
-                    duration: videoElement.duration,
-                    currentTime: videoElement.currentTime
-                };
-                
-                localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
-                updateNowWatching();
-            }
-        }
-        
-        function addToPlaylist(contentId) {
-            const content = allContent.find(item => item._id === contentId);
-            if (content) {
-                const playlistItem = {
-                    id: contentId,
-                    title: content.title,
-                    type: content.type,
-                    thumbnail: content.thumbnail
-                };
-                
-                if (!playlist.find(item => item.id === contentId)) {
-                    playlist.push(playlistItem);
-                    localStorage.setItem('playlist', JSON.stringify(playlist));
-                    showNotification('success', 'Added to playlist');
-                } else {
-                    showNotification('info', 'Already in playlist');
-                }
-            }
-        }
-        
-        function changeQuality(quality) {
-            currentQuality = quality;
-            localStorage.setItem('defaultQuality', quality);
-            
-            if (videoElement && hls) {
-                // HLS quality switching logic here
-                // This would depend on your HLS manifest structure
-                showNotification('info', `Quality changed to ${quality}p`);
-            }
-        }
-        
-        function downloadContent() {
-            if (currentContent && currentContent.downloadUrl) {
-                window.open(currentContent.downloadUrl, '_blank');
-            } else if (videoElement && videoElement.src) {
-                // Fallback to video source
-                const a = document.createElement('a');
-                a.href = videoElement.src;
-                a.download = `${currentContent.title || 'video'}.mp4`;
-                a.click();
-            } else {
-                showNotification('error', 'Download not available');
-            }
-        }
-        
-        function toggleSubtitles() {
-            // Toggle subtitle logic
-            showNotification('info', 'Subtitles toggled');
-        }
-        
-        function toggleFullscreen() {
-            const playerContainer = document.getElementById('playerContainer');
-            if (!document.fullscreenElement) {
-                playerContainer.requestFullscreen().catch(err => {
-                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        }
-        
-        function showPlayer() {
-            if (currentContentId) {
-                const playerModal = new bootstrap.Modal(document.getElementById('playerModal'));
-                playerModal.show();
-            } else {
-                showNotification('info', 'Play something first');
-            }
-        }
-        
-        // Filter and Search Functions
-        function setFilter(filterType) {
-            currentFilter = filterType;
-            
-            // Update active filter button
-            document.getElementById('filterAll').classList.remove('active');
-            document.getElementById('filterMovies').classList.remove('active');
-            document.getElementById('filterSeries').classList.remove('active');
-            
-            document.getElementById(`filter${filterType.charAt(0).toUpperCase() + filterType.slice(1)}`).classList.add('active');
-            
-            loadAllContent(1);
-        }
-        
-        // Pagination Functions
-        function updatePagination(totalItems, currentPageNum, totalPagesNum) {
-            currentPage = currentPageNum;
-            totalPages = totalPagesNum;
-            
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
-            
-            // Previous button
-            const prevDisabled = currentPage <= 1 ? 'disabled' : '';
-            pagination.innerHTML += `
-                <li class="page-item ${prevDisabled}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-            `;
-            
-            // Page numbers (max 5 pages shown)
-            const startPage = Math.max(1, currentPage - 2);
-            const endPage = Math.min(totalPages, startPage + 4);
-            
-            for (let i = startPage; i <= endPage; i++) {
-                const active = i === currentPage ? 'active' : '';
-                pagination.innerHTML += `
-                    <li class="page-item ${active}">
-                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
-                    </li>
-                `;
-            }
-            
-            // Next button
-            const nextDisabled = currentPage >= totalPages ? 'disabled' : '';
-            pagination.innerHTML += `
-                <li class="page-item ${nextDisabled}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            `;
-            
-            // Show/hide pagination
-            document.getElementById('paginationContainer').classList.toggle('d-none', totalPages <= 1);
-        }
-        
-        function changePage(pageNum) {
-            if (pageNum < 1 || pageNum > totalPages || pageNum === currentPage) return;
-            loadAllContent(pageNum);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        
-        // Content Management Functions
-        async function deleteContent() {
-            const contentId = document.getElementById('deleteBtn').getAttribute('data-content-id');
-            
-            if (!contentId || !confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
-                return;
-            }
-            
-            showLoading(true);
-            try {
-                const response = await fetch(`${getApiBaseUrl()}/api/content/${contentId}`, {
-                    method: 'DELETE'
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('success', 'Content deleted successfully');
-                    
-                    // Close modal
-                    bootstrap.Modal.getInstance(document.getElementById('contentModal')).hide();
-                    
-                    // Remove from watch history and playlist
-                    delete watchHistory[contentId];
-                    localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
-                    
-                    playlist = playlist.filter(item => item.id !== contentId);
-                    localStorage.setItem('playlist', JSON.stringify(playlist));
-                    
-                    // Reload content
-                    loadAllContent(currentPage);
-                    loadStats();
-                    updateNowWatching();
-                } else {
-                    throw new Error(data.message || 'Failed to delete content');
-                }
-            } catch (error) {
-                console.error('Error deleting content:', error);
-                showNotification('error', 'Failed to delete content');
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        // Utility Functions
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-        
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        function updateConnectionStatus(status, message) {
-            const statusElement = document.getElementById('connectionStatus');
-            if (status === 'connected') {
-                statusElement.innerHTML = '<span class="badge bg-success">Connected</span>';
-            } else {
-                statusElement.innerHTML = '<span class="badge bg-danger">Disconnected</span>';
-            }
-        }
-        
-        function showLoading(show) {
-            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
-        }
-        
-        function showNotification(type, message) {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = `position-fixed top-0 end-0 p-3`;
-            notification.style.zIndex = '9999';
-            
-            notification.innerHTML = `
-                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'danger'} border-0" 
-                     role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            ${message}
-                        </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" 
-                                data-bs-dismiss="toast"></button>
+
+        function render(data) {
+            grid.innerHTML = data.map(item => `
+                <div class="card" onclick="playMedia('${item._id}')">
+                    <span class="badge">${item.type.toUpperCase()}</span>
+                    <img src="${item.thumbnail || 'https://via.placeholder.com/300x450?text=No+Image'}" 
+                         alt="${item.title}" loading="lazy">
+                    <div class="card-info">
+                        <div class="card-title">${item.title}</div>
+                        <div class="card-meta">${item.year || ''} • ${item.genre?.[0] || 'Media'}</div>
                     </div>
                 </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Show and auto-remove toast
-            const toast = new bootstrap.Toast(notification.querySelector('.toast'), {
-                delay: 3000
-            });
-            toast.show();
-            
-            toast._element.addEventListener('hidden.bs.toast', () => {
-                notification.remove();
-            });
+            `).join('');
         }
-        
-        // API Configuration Modal
-        function showApiConfig() {
-            document.getElementById('apiBaseUrl').value = API_BASE_URL;
-            document.getElementById('itemsPerPage').value = ITEMS_PER_PAGE;
-            document.getElementById('defaultQuality').value = DEFAULT_QUALITY;
+
+        async function playMedia(id) {
+            const item = allData.find(i => i._id === id);
+            if(!item) return;
+
+            let streamUrl = item.streamUrl;
             
-            const modal = new bootstrap.Modal(document.getElementById('apiConfigModal'));
-            modal.show();
+            // Handle TV Series logic (auto-play S1E1 if not specified)
+            if(!streamUrl && item.seasons?.length > 0) {
+                const s1 = item.seasons.find(s => s.seasonNumber === 1) || item.seasons[0];
+                const e1 = s1.episodes?.[0];
+                streamUrl = e1?.streamUrl;
+            }
+
+            if(!streamUrl) {
+                alert("Stream not available for this item.");
+                return;
+            }
+
+            playingTitle.innerText = item.title;
+            playerOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            if (Hls.isSupported() && streamUrl.endsWith('.m3u8')) {
+                if (hls) hls.destroy();
+                hls = new Hls();
+                hls.loadSource(streamUrl);
+                hls.attachMedia(video);
+            } else {
+                video.src = streamUrl;
+            }
         }
-        
-        function saveApiConfig() {
-            API_BASE_URL = document.getElementById('apiBaseUrl').value;
-            ITEMS_PER_PAGE = parseInt(document.getElementById('itemsPerPage').value);
-            DEFAULT_QUALITY = document.getElementById('defaultQuality').value;
-            currentQuality = DEFAULT_QUALITY;
-            
-            localStorage.setItem('apiBaseUrl', API_BASE_URL);
-            localStorage.setItem('itemsPerPage', ITEMS_PER_PAGE);
-            localStorage.setItem('defaultQuality', DEFAULT_QUALITY);
-            
-            // Close modal
-            bootstrap.Modal.getInstance(document.getElementById('apiConfigModal')).hide();
-            
-            // Test connection and reload
-            testConnection().then(connected => {
-                if (connected) {
-                    loadAllContent(1);
-                    loadStats();
-                }
-            });
+
+        function closePlayer() {
+            playerOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            video.pause();
+            video.src = "";
+            if(hls) hls.destroy();
         }
-        
-        // Initialization
-        function init() {
-            // Set up debounced search
-            const debouncedSearch = debounce(() => {
-                renderContentGrid();
-            }, 300);
-            
-            document.getElementById('searchInput').addEventListener('input', debouncedSearch);
-            
-            // Keyboard shortcuts
-            document.addEventListener('keydown', (e) => {
-                if (e.key === '/' && e.target !== document.getElementById('searchInput')) {
-                    e.preventDefault();
-                    document.getElementById('searchInput').focus();
-                }
-                if (e.key === 'Escape' && document.activeElement === document.getElementById('searchInput')) {
-                    document.getElementById('searchInput').blur();
-                    document.getElementById('searchInput').value = '';
-                    renderContentGrid();
-                }
-                
-                // Player shortcuts
-                if (e.key === ' ' && videoElement) {
-                    e.preventDefault();
-                    playerPlayPause();
-                }
-                if (e.key === 'ArrowLeft' && videoElement) {
-                    e.preventDefault();
-                    videoElement.currentTime = Math.max(0, videoElement.currentTime - 10);
-                }
-                if (e.key === 'ArrowRight' && videoElement) {
-                    e.preventDefault();
-                    videoElement.currentTime = Math.min(videoElement.duration, videoElement.currentTime + 10);
-                }
-                if (e.key === 'm' && videoElement) {
-                    e.preventDefault();
-                    playerMute();
-                }
-                if (e.key === 'f' && videoElement) {
-                    e.preventDefault();
-                    toggleFullscreen();
-                }
-            });
-            
-            // Set active filter button
-            document.getElementById('filterAll').classList.add('active');
-            
-            // Focus search on load
-            setTimeout(() => {
-                document.getElementById('searchInput').focus();
-            }, 100);
-            
-            // Preconnect to API
-            const link = document.createElement('link');
-            link.rel = 'preconnect';
-            link.href = new URL(API_BASE_URL).origin;
-            document.head.appendChild(link);
-            
-            // Load watch history
-            updateNowWatching();
-            
-            // Initial load
-            testConnection().then(connected => {
-                if (connected) {
-                    loadAllContent(1);
-                    loadStats();
-                }
-            });
+
+        function showLoader(show) {
+            document.getElementById('loader').classList.toggle('active', show);
         }
+
+        // Fast Local Filtering
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allData.filter(i => 
+                i.title.toLowerCase().includes(term) || 
+                i.genre?.some(g => g.toLowerCase().includes(term)) ||
+                (i.year && i.year.toString().includes(term))
+            );
+            render(filtered);
+        });
+
+        // Listen for escape key to close player
+        document.addEventListener('keydown', (e) => {
+            if(e.key === "Escape") closePlayer();
+        });
+
+        init();
     </script>
 </body>
 </html>
+
